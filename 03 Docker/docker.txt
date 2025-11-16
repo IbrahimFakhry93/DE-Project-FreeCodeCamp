@@ -1,0 +1,778 @@
+#? Docker
+ so
+now we're moving on into the first
+module which is the introduction to
+Docker and what we use Docker for in
+data engineering but first we have to
+have a better understanding of what it
+is if you haven't used it before Docker
+is an open source platform that
+simplifies the process of building
+shipping and running any applications
+inside containers so imagine you are
+working on a project and you want your
+co-workers to try and use it to see if
+there's any issues but they can't run it
+for some reason and you kind of run into
+that good old saying of hey it runs okay
+on my machine well what Docker is able
+to do is you're able to put your
+environment into a container and that
+container will include every dependency
+and kind of Silo everything into again
+this container which you can then pass
+on to your co-workers or even even run
+up in the cloud to have your application
+running as it was when you were
+developing it so it essentially just
+helps organize and make sure everything
+works as developed so if we're going
+over containers and their benefits
+containers are lightweight portable and
+self-sufficient environments that
+package an application along with all
+its dependencies libraries and
+configurations as I mentioned before
+again just going over how much Docker
+has really really helped engineers in
+General on packaging their applications
+to make sure that they don't run into
+any issues down the line when testing
+and developing and to make sure that
+those environments are reproducible in
+case anything goes wrong and making sure
+that also when they're pushing up into
+the cloud or into production that those
+applications are working as intended and
+when they were testing it's going to
+work the same way in prod so now just
+imagine that all your apps code and all
+your apps dependencies are landing into
+one of these containers and you're
+shipping one of those off out into you
+know your cooworker place or on AWS or
+gcp everything that was inside that
+container will be seen on the other end
+as well now as I mentioned before in
+software development we're looking at
+Docker in the form of testing deployment
+for its ease of use speed and
+flexibility it assists with the
+deployment scaling and management of
+those applications using what we call
+containerization which is just a
+lightweight form of virtualization so if
+you look on the right hand side's
+illustration here you can see that we
+have a couple apps that are in
+containers using Docker uh as well as
+you know sitting on top of your
+operating system and the infrastructure
+and it's all running all within the
+docker ecosystem now there are three
+main concepts with Docker that we need
+to understand the first one is going to
+be Docker files the second one is going
+to be Docker images and the third one is
+going to be Docker containers now let's
+go over what those three are right now
+the first step is the docker file the
+docker file is a text file that consists
+of all the instructions needed hence
+blueprints that we want Docker to use
+all in order to create the docker image
+so the docker image is what is created
+from the docker file hence the blueprint
+so the blueprint then creates our Docker
+image which is the lightweight
+Standalone executable package that
+includes everything we need to run your
+piece of software that includes code the
+runtime libraries environment variables
+and config files the one thing to note
+is that images are readon and immutable
+so nothing can change within the docker
+image itself if you wanted to create
+another Docker image or modify anything
+that exists you want to modify your
+Docker file and the instructions that
+inside that text file to create a new
+Docker image so that's why we stick the
+image into a Docker container which is
+the runtime instance of our Docker image
+or in other words the running version of
+the image is the docker container this
+Docker container is completely isolated
+from the host and other containers that
+you may have running it has its own file
+system and can be started stopped and
+deleted inde dependently so for example
+we may have one Docker image that
+contains our application but we have
+three different Docker containers
+running that same image so we have three
+different environments three different
+instances of that image but I can stop
+one and the other two are still going to
+run I can delete one and nothing changes
+in those other containers because they
+are isolated environments and you can
+run tests you can do anything you want
+in those containers but nothing will
+change unless it is done inside the
+container so first things first to get
+started with Docker is obviously we're
+going to want to install Docker so head
+over to doer. and here is the landing
+page of Docker now what we want to do is
+simply just download Docker for whatever
+operating system you have I am currently
+running on a mac Apple chip so I would
+click this and download Docker desktop
+which also comes with Docker compose
+which we will also need for later along
+in this course but just know that Docker
+compose and Docker desktop are two
+prerequisites to running with Docker
+right now now if you're on Windows
+obviously follow the instructions for
+Windows if you're on Linux follow the
+instructions for Linux but go ahead and
+download Docker for your machine and if
+you have any questions uh you can also
+go over to Docker and they have a really
+good explanation in their docs on how to
+install Docker desktop for your machine
+and get going with that so make sure you
+do this first now that we have Docker
+installed I think the docker docks have
+a great getting started guide on how you
+can actually containerize an application
+and so what we're going to do is
+actually just go through this really
+quickly and it can give us a great idea
+of how to containerize an application
+through a Docker file how we build the
+image getting the image to run inside of
+a container and then a couple other
+things like networking and things like
+that so let's go ahead and go through
+the getting started guide and then we'll
+move on into the SQL module right after
+so if you were still confused on what a
+container is or what an image is it
+gives you a good rundown here at the
+beginning of part one but let's go into
+part two on how we can containerize an
+application first things first is they
+actually have a getting started app
+which is just a to-do app for you to
+containerize but what we're going to do
+first is simply just clone this and and
+use it for the rest of this guide I'm
+going to open up my terminal here and
+make a directory and I'm going to call
+this Docker tutorial and I'm going to CD
+into Docker
+tutorial and then after that what we're
+going to do is paste in the command that
+was in there which simply just clones
+the repo and obviously if it wasn't
+clear enough and make sure you have a
+text editor installed I'm using vs code
+and I think that should be it obviously
+Docker installed now that it's clone
+let's go ahead and CD into the getting
+started guide and what we can see here
+is if we open up vs code there's a
+couple things here so we have a spec
+file we only really need to look at the
+source file but this is just a simple
+Todo app so let's go ahead and go back
+to the getting started guide and it has
+the instructions for you on Mac and
+windows so depending on your operating
+system make sure you follow the right
+ones but we've already cded into it what
+we're going to do is inside of the route
+directory of the getting started app
+we're going to to create a Docker file
+and as mentioned before this is going to
+be the instructions on how we build the
+image that containerized the application
+that the docker file is sitting in so
+now that I've created the docker file if
+type in LS you can see that the docker
+file is there so what we're going to do
+is they've provided us the instructions
+or the contents that we're going to use
+for this Docker file now you can see
+that we have a couple things here that
+we haven't seen before but essentially
+what from is is we're going to use the
+node 18 package that we're pulling from
+the docker Hub to run our environment in
+or our run time the working directory is
+going to be in the SL app or the root
+directory of the application this simply
+copies everything and then we're going
+to run this command which is yarn
+install production other commands that
+are going to be is going to be node and
+we're going to look at in the source
+index.js file and we're also exposing
+Port 3000 so you can see that these
+instructions are pretty straightforward
+read like English the one thing to take
+in mind is that this does have to be in
+order this cannot be misplaced so keep
+that in mind when you're writing your
+own Docker files but what we're going to
+do is we're simply just going to copy
+this switch back over to our VSS code
+head into Docker file and then just
+paste this in and save now that that's
+saved they give us a command so we're
+going to run Docker build hyphen T which
+simply just tags our image and then
+we're going to name it getting started
+so that will be the name of our image
+and then the dot we need at the end to
+tell Docker where to look for everything
+to containerize which will simply just
+be in the the current directory so I'm
+going to go ahead and copy this command
+as well paste this in also make sure
+that you have the docker Damon running
+if you installed Docker desktop just
+simply open the application let
+everything launch and then you should be
+good so I'm going to go ahead and hit
+enter this is going to do a couple
+things awesome so now if we go back into
+Docker desktop and we go into images you
+can see at the very top getting started
+is created we have an image the tag is
+going to be the latest tag hasn't been
+used yet tells us our size but now we
+have an image with everything as you can
+see from the docker file so you can see
+the commands that we ran we have node
+version 18 which we did with the from
+command and then we're also exposing
+Port 3000 so you can see that the docker
+files blueprint is in play here next
+thing we're going to do is going to
+start this container so we can say
+Docker run which is going to run the
+image in a container we're going to flag
+it for DP which the D flag is short for
+detach which runs the container in the
+background the P flag is short for
+publish which means that we're creating
+this Port mapping so that we can
+actually access this container locally
+and with the mapping we're pointing it
+to a local host here so 12.0.0 point1
+and we're opening it on Port 3000 now
+keep in mind this can change say you
+have an application already running on
+Port 3000 but you wanted to run this on
+Port 6000 you can definitely change this
+but this number after the colon needs to
+stay at 3,000 because in our Docker file
+we exposed Port 3000 so to be able to
+access this we need to still keep that
+number to 3,000 and then after this this
+is the name of our container so
+obviously we're going to name it getting
+started so let me copy and paste this go
+back in our terminal and as you can see
+it spits out a container ID uh I'm going
+to go Ahad and copy this for later but
+if we go back into Docker desktop now
+just for a simpler gooey to see if we go
+to the containers tab you can see that a
+container was created with the image
+getting started and it is currently
+running on Port 3000 so now if we're
+going to go back here and we want to go
+to local poost Port 3000 you can see
+that the app is now running locally and
+we're accessing this container so that
+is good now we can move on well first of
+all what we may want to do is I can show
+you guys that you can actually write
+stuff to this so as I mentioned before
+this is a to-do app so I can say get cat
+food take out the trash very simple
+react app going on right now that is
+inside of a container so as I mentioned
+previously before we started this demo
+is that Docker contains a runtime it
+contains all the environment variables
+and it contains every single dependency
+that react or this application in
+general needs in order to run and so
+we're siloed inside of a container with
+a runtime with this environment and
+we're able to actually use the
+application within the container there's
+a couple other commands it tells us so
+in the command line we can run Docker PS
+and it will name any other containers
+that are currently running along with
+their container ID so as I mentioned
+this container ID popped up but if I
+type in Docker PS it's going to be the
+only one running but if there were any
+other containers running we can pull
+their container ID along with their
+names and other information the other
+thing to note too is that container IDs
+can be accessed you don't need the full
+container ID you only need the first
+couple digits here and you can still
+access that container so let's move on
+to part three here now we were going to
+want to make some changes to this code
+and this is going to show us how
+updating the application itself changes
+things so they want us to change a
+paragraph inside of the SRC static JS
+app.js file so let's head back into vs
+code so we're in SRC we're in static
+we're going to go to
+index.js JS app.js sorry and then go to
+56 and then we're simply going to change
+this text to be what they told us we're
+going to go ahead and save that but now
+that we've updated the application that
+means we actually have to build another
+version of this image because the image
+we built cannot be Rewritten it is
+completely readon and so if we're going
+to make any changes we have to create
+another image and so that's exactly what
+we're going to do we're going to run the
+same Docker build command command in the
+terminal and that's going to build
+another image and so now what we're
+going to do is we're going to run
+container command but we're going to get
+an error here because we already have a
+container with that name that's binded
+to Port 3000 now if we want to remove
+the old container that this will bring
+us back into Docker PS so we're going to
+run Docker PS and so we can see that
+this container is still running so what
+we're going to do is we're going to say
+Docker RM paste the container ID and
+that should give me another error saying
+you cannot remove a running container so
+we're going to say Docker RM and put in
+the F flag that will stop the container
+as well as remove the container so I'm
+going to do that and that should now get
+rid of it and now we can see that this
+has stopped and we can copy and paste
+this again and now we've created another
+container and it has started running
+with the updated image now if we go back
+into the to-do app and refresh this you
+can see that it's completely fresh and
+the new text has been added so that's
+what happens when you go and update an
+application we're going to skip part
+four but if you wanted to push this
+image up into the docker hub for other
+people to access you can absolutely do
+that we're not doing that right now so
+at your own you can go through part four
+but we're going to go to part five and
+this is actually a big one because
+sometimes we're messing with data and as
+we saw in the to-do app we have data and
+we want to persist it but if we were to
+stop the container and open it the data
+that we had previously is going to be
+gone so the way we can actually assist
+data is by simply adding a couple things
+so we're going to go through the steps
+one more time but we're going to run
+this command here we're simply going to
+start a container that has a buntu
+running and it's going to contain a file
+called data. text that will have a
+random number between 1 and 10,000 so
+let's go open up my terminal and we're
+going to run Docker through that and as
+you can see it created another container
+has an image of auntu I already had it
+installed locally but if you do not have
+the iunu image it will immediately
+detect that and download that from the
+docker Hub once we have that going we're
+going to copy and paste this and this
+will simply check the file that is
+inside the container which is data. text
+and it should spit out the name of the
+or should not spit out the name but it
+should spit out the number and what we
+need to do is we need to remove the
+current container ID or the placeholder
+there with the actual container ID and
+there we go we have 848 that's spit out
+to us so we know that there is data in
+side they want us to start another
+container that has a bunu so we're going
+to go ahead and do that as well and
+it'll list in every single folder that
+is currently in the root of that
+container and then what we're going to
+do also is we're going to remove that
+first container so again we're going to
+go Docker
+RMF and then the first container should
+be this one right here so we went ahead
+and removed that so the way to process
+data in that container is going to be by
+creating a volume and it's pretty simple
+to do so the first thing we're going to
+do is run this Command right here that
+they give us essentially we're going to
+be creating a volume called Todo hyphen
+DB so let me go ahead and open my
+terminal here and what we're going to
+see in the volumes tab now is a to do I
+DB what we're going to have to do is
+remove the container that we created
+because it is running without a
+persistent volume because we created the
+volume after container creation so we're
+going to have to create a fresh one so
+again let me grab the the container ID
+of the getting started container and
+same thing Docker RM hyphen f and with
+the container ID and that should remove
+it for other purposes let me also just
+remove this as well cool so we have a
+clean slate now we're simply going to
+copy this command but there's a couple
+things here so along with the run and
+run command the dnp flags as well as
+mounting this or not mounting this but
+binding it to the port 3000 we're also
+mounting the volume here here which is
+going to be the flag here that we see or
+the option and we're specifying the
+volume that we want to mount so the type
+is going to be volume the source of the
+volume is going to be the to-do hyphen
+DB volume we just created and the target
+is going to be where the actual data
+sits inside of the container so that is
+the path that we're going to do and then
+getting started we're actually just
+specifying the image that we we're using
+or the container so let me go ahead and
+copy this command paste it in and now
+you can see that we have another
+container with getting started and it
+will be utilizing the 2db volume that
+we've created so now what we can do
+since it's running we're going to go
+back here to the to-do app and as you
+can see I have some data that was in
+there and I didn't add anything you saw
+that it was empty and there's two tasks
+in here that I added previously about I
+mean yesterday and they persisted so now
+we're able to tap into the volume and
+the data and anything that we do from
+here on out let's just say I I don't
+know go to the gym we want to add that
+if we stop this container container and
+then start it again and refresh this we
+can see that the data is persisting now
+so volume creation is going to be the
+way to persist databases especially if
+you're testing stuff this is a good way
+to do that within Docker and it's easy
+to play around with servers and actual
+databases now that we have data that
+persists instead of having to reload and
+add more data over and over and over
+again so there's a couple other things
+that we can see but if you were to run
+Docker volume inspect on the volume
+itself you can see a couple things of
+metadata here but specifically we get to
+see the mount point the name the scope
+of it and it's created time so those are
+a cool couple things if you want to
+persist databases within Docker next
+thing we're going to do is we're going
+to skip over to part seven I don't
+really want to touch into the used bind
+mounts right now but multicontainer apps
+so as I mentioned we may have a couple
+things that we're running and so
+multiple containers are going to be
+needed in this case we have our to-do
+app but we also want to create a my sqil
+container that runs in tandem with the
+to-do app so that we can isolate our
+database and our front an app here in
+order for these two containers to talk
+we're going to need to create a network
+and that's exactly what we're going to
+do right now so we're going to run this
+command Docker Network create and the
+Network's name is going to be to-do app
+so let me go ahead and run that right
+now it's going to give me an error
+because I already created this but go
+ahead and run that and it will create a
+network there for you so now what we're
+doing is we're going to create another
+container and then attach it to the
+network that we just created and so you
+can see that we have a couple Flags here
+first ones are going to be the network
+so we're tying the network of this
+container to the to-do app Network we
+created the Alias of this is going to be
+my SQL so when we see the container
+through the network we're going to know
+that this container here is the MySQL
+container some of the variables that we
+have here are going to be the volume
+that we want to create is going to be
+the to-do MySQL hyphen data volume so
+we're creating a volume there to persist
+the actual database and then we have two
+environment Flags specific to my SQL
+again if you're using something like
+maybe say postgress there's going to be
+some different environment variables you
+need to attach to this container two of
+the first ones being in my SQL are going
+to be the root password as well as the
+database name so we know that our
+password Here is secret and then the
+name of our database is going to be
+to-dos and we're going to be pulling the
+MySQL version 8 Docker image so what
+we're going to do is copy this over and
+we're going to go into our terminal and
+create that and now we can see we have a
+MySQL image again I've downloaded
+locally already and the container is now
+running to confirm that we have the
+database running we're going to this
+command here so we're exing hyphen it
+and the container ID will go right after
+that then it will spit out the my SQL
+command enter in the user which is root
+and then ask us for the password so let
+me go ahead and copy this really quick
+in here and copy the container ID that
+it gave us and now replace the
+placeholder enter It'll ask us for the
+password and as we saw before it was
+secret so let me enter that in and now
+we are inside of our mySQL database the
+next thing it asks us to do is type in
+show databases to confirm that our
+databases was created and we see the
+to-dos database is here so our commands
+ran successfully now we can say exit and
+now we have a to-dos database we're
+going to skip this part because it's not
+really necessary but if you want to
+follow it it simply just spins up a DNS
+tool that will allow you to see the IP
+address of the container and show you
+that each container has its own IP
+address so this networking step really
+is crucial for these two containers to
+talk to each other so what I'm going to
+do here is I'm actually going to first
+remove the container of the getting
+started app that we created first
+because it's not tied to this network
+yet so let me go ahead and remove it
+first and then we're going to create
+another one using this command here and
+as you can see we're doing the same run
+command here but with a couple other
+flags so there's just you know we're
+tying it to the network here there's a
+couple other environments like hooking
+it up to the mySQL database so that
+we're actually able to push data to the
+database same thing with the node
+versions and then initializing the
+application with yarn install and and
+run Dev so let me go ahead and copy and
+paste this over and there we go we
+should have another container built with
+the note 18 Alpine image instead now if
+we want to connect to the mySQL database
+let's go ahead and do that here so we're
+going to copy this command again copy
+and paste this and then we need to get
+into the mySQL database so let me copy
+and paste that
+enter the password here and it is secret
+so now that we're in so we're going to
+do the select function here and we're
+going to select all from to doore items
+and we can see that the three items that
+we created inside of the application are
+now here inside of the database so we're
+confirming that the data that we created
+in the volume is now inside of our my
+SQL database and that right there is the
+power of networking earlier in this
+module I also mentioned Docker composed
+and it makes this whole process that we
+just did with this application 10 times
+easier again as I mentioned before also
+is that Docker compose is a tool that
+helps you to find and share multiple
+container applications and so we're
+going to be doing that right now this
+right here was the old command that we
+had to run inside of our terminal to get
+everything running for the MySQL and to
+do app but we can simply do that all of
+this in one Docker file and the docker
+file now changes to a Docker composed.
+yl file or you can shorten it to compose
+y so we're going to head back into our
+terminal here and inside of the rout
+where we initially put our Docker file
+we're going to create a new file and
+call it compose do yaml and what Docker
+has provided us with were a couple
+things so we're going to go ahead and
+copy and paste this now make sure it
+added to space here but it will air out
+if it has an empty space so cover that
+space again yaml is very strict with
+spacing and indentation so keep that in
+mind but the first thing here we're
+going to do is specify Services of our
+compose file the first one is is going
+to be our app which is going to contain
+the image of the node version 18 so
+we're going to run node in this
+container next thing we're going to do
+is add the command so the command we
+want to run is going to be the yarn
+install and and run the dev environment
+there so we're going to add that here
+next thing is we're going to open up the
+ports and it's going to be the same port
+the 127 on Port 3000 so now we're moving
+the working directory to the volume
+mapping uh and by doing that we're going
+to add the working directory and then
+the volumes so let me go ahead and add
+that as well and then finally we're
+going to add the environments so these
+environment variables are all going to
+be the MySQL environment variables so
+that we can access the database through
+the application itself when we add a
+need todos so again the host the user
+password database name these are all
+there and are going to specified for
+this app container now we're going to do
+the same but for my SQL so we saw the
+app container but now if we back up a
+couple spaces we're going to add the
+MySQL container so you can see that
+these two are on the same line one being
+app with all of its information here and
+then MySQL will contain the same but now
+we're pulling the MySQL version 8 image
+the volumes that we want to use for this
+container is going to be the to-do MySQL
+data so let me go ahead and add that and
+then the overall volumes here are going
+to be outside of that and then finally
+what we need to do is we're going to add
+the environment variables for the
+specific container so we can access
+now everything in your composed. file
+should look like this again the top
+level is identifying what services that
+we want this file to create the first
+one being our app container using the
+node 18 image this is the command we
+want to run this is the port that we
+want to expose and use to access this
+application our working directory is
+going to be this root directory that
+contains everything here the volumes
+we're mapping is going to use the app
+this is the environment variables we use
+to connect to our MySQL container that
+also contains its own information and so
+now it's much easier with Docker compose
+to run this application now that we have
+our composed. yl file I can open up my
+terminal here let me exit my SQL clear
+this now all I have to do is run Docker
+compose up and I can add The Hyphen D
+flag to make sure that this runs in the
+background and what that's did just now
+was literally spit out two containers
+one it looks like it failed because I
+have a container running already that
+has 3,000 so let me go ahead and just
+delete this and delete this from the
+docker desktop app so we can have a
+clean slate and let me run the same
+thing and there we go now it's spit out
+the getting started app and it contains
+our app and my SQL container both of
+them running and we have opened on Port
+3000 and if I head over into our Local
+Host Port 3000 I'm refreshing and you
+can see it's all fresh so we are no
+we're using a different volume here but
+the application is now running
+successfully it is attached to our mySQL
+database and we can continue and now add
+data here that will persist because we
+have tied a volume here to both of these
+containers now if we wanted to tear it
+down all we would have to do is Docker
+compose down and that will shut down and
+stop our containers from running and
+that right there is a simple rundown of
+how you can create images and a
+container through Docker using Docker
+files or a composed. yl file and then
+accessing those containers to do certain
+things we ran a application in the form
+of a to-do app and we also created a
+mySQL database pretty quickly here in
+their own environments and that way we
+have co-workers that are working on the
+same thing they can run the same image
+that we're on using the same environment
+variables using the same dependencies
+and essentially be able to recreate any
+problems or just have the same
+environment that we're running on every
+single time and that is the power of
+containerization through Docker we're
+going to be using a lot of these skills
+in the coming lessons so hopefully that
+helps 
