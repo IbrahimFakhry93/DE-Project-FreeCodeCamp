@@ -13,16 +13,16 @@
 
 # ? Instead of installing PostgreSQL manually, we use Docker to run it inside a container.
 # * docker pull postgres                # download PostgreSQL image
-# ~ docker run --name data_eng_pg -e POSTGRES_PASSWORD=secret -d postgres
+# ~ docker run --name de_dbpg -e POSTGRES_PASSWORD=secret -d postgres
 # *   --name = container name
 # *   -e = environment variable (here we set password)
 # *   -d = run in background
 
 # ? Create a new database inside the container:
-# * docker exec -U postgres data_eng_pg createdb postgresdb
+# * docker exec -U postgres de_dbpg createdb postgresdb
 
 # ? Connect to the database:
-# * docker exec -it data_eng_pg psql -U postgres -d postgresdb
+# * docker exec -it de_dbpg psql -u postgres -d postgresdb
 
 # & Creating Tables
 
@@ -85,8 +85,10 @@
 
 # & Aggregate Functions
 
+# * Aggregate function are useful for analytics to calculate metrics and gain insights from our data
+
 # ? Aggregate functions compute values across rows.
-# * SELECT COUNT(*) FROM films;        # count rows
+# * SELECT COUNT(*) FROM films;        # count rows (or count number of records)
 # * SELECT SUM(price) FROM films;      # total of all prices
 # * SELECT AVG(user_rating) FROM films;# average rating
 # * SELECT MAX(price), MIN(price) FROM films; # highest and lowest price
@@ -97,6 +99,8 @@
 # * SELECT rating, AVG(user_rating)
 # * FROM films
 # * GROUP BY rating;
+
+# * Group identical forms of data
 
 # & Joins (Combining Tables)
 
@@ -115,6 +119,8 @@
 # * films table → has movies
 # * actors table → has actor names
 # * film_actors table → bridge linking films to actors
+# ~ (We use film_actors as a bridge to connect the actor names to their correct films)
+
 # * INNER JOIN → only shows films with matching actors
 # * LEFT JOIN → shows all films, even if no actors assigned
 
@@ -127,6 +133,9 @@
 # * UNION
 # * SELECT category_name FROM film_categories;
 
+# * use Join to combine tables have different data sets
+# * use Union to combine results sets of two queries
+
 # & Key Notes for Beginners
 
 # * Always end SQL statements with a semicolon (;).
@@ -134,3 +143,105 @@
 # * Use lowercase for table/column names.
 # * WHERE clause is critical to avoid updating/deleting all rows by mistake.
 # * Joins are powerful: they let you combine multiple tables into one result set.
+
+
+# & SQL Subqueries
+
+# ? What is a subquery?
+# * A subquery is a query inside another query, written in parentheses.
+# * SQL executes the inner query first, then uses its result in the outer query.
+# * Subqueries can appear in SELECT, WHERE, FROM, or HAVING clauses.
+# ? Think of it like: "Ask one question, then use its answer to help answer another."
+
+# & Example 1: Subquery inside SELECT
+
+# ? We want to show each film title along with one of its actors.
+# ? Instead of joining directly, we use a subquery inside SELECT.
+
+# * SELECT f.title,
+# *        (SELECT a.actor_name
+# *         FROM actors a
+# *         JOIN film_actors fa ON a.actor_id = fa.actor_id
+# *         WHERE fa.film_id = f.film_id
+# *         LIMIT 1) AS actor_name
+# * FROM films f;
+
+# ? Explanation:
+# * Outer query → selects film titles from films table (alias f).
+# * Inner query → finds actor_name for that film_id by joining actors + film_actors.
+# * LIMIT 1 → ensures only one actor is returned per film.
+# * SQL runs the inner query for each film row, then adds the result to the outer query.
+
+# & Example 2: Subquery with IN operator
+
+# ^ Goal:
+# ^ Find films that feature Leonardo DiCaprio or Tom Hanks.
+# * We use a subquery in the WHERE clause with IN.
+
+# * SELECT title
+# * FROM films
+# * WHERE film_id IN (
+# *   SELECT fa.film_id
+# *   FROM film_actors fa
+# *   JOIN actors a ON fa.actor_id = a.actor_id
+# *   WHERE a.actor_name IN ('Leonardo DiCaprio', 'Tom Hanks')
+# * );
+
+# ? Explanation:
+# * Outer query → selects film titles from films table.
+# * WHERE film_id IN (...) → only include films whose IDs are returned by the subquery.
+# * Inner query → finds film_ids where actor_name is Leonardo DiCaprio or Tom Hanks.
+# * Result → Inception, Forrest Gump, Toy Story (all feature those actors).
+
+# & Why subqueries are useful
+
+# ? They allow complex filtering or calculations without writing multiple queries manually.
+# ? They can replace joins in some cases, though joins are often more efficient.
+# ? They make queries more readable when you want to "nest" logic.
+
+# & Beginner Tips
+
+# * Always wrap subqueries in parentheses.
+# * Use aliases (like f, a, fa) to shorten table names and make queries clearer.
+# * Subqueries can be correlated (depend on outer query values) or independent.
+# * Correlated subquery example: WHERE fa.film_id = f.film_id (depends on outer query row).
+# * Independent subquery example: SELECT AVG(price) FROM films (does not depend on outer query).
+
+# & Quick Recap
+
+# ? Subqueries = queries inside queries.
+# * They can appear in SELECT (return a value), WHERE (filter rows), or FROM (act as a table).
+# * They are powerful for filtering, calculations, and combining data across multiple tables.
+
+
+#! ask chatgpt about the sequence of execution and performance
+
+# ^ Subquery in the `SELECT` Clause:
+
+# ~ - Retrieve each film's title along with the name of one of its actors.
+
+# SELECT title,
+#        (SELECT actor_name
+#         FROM actors a
+#         JOIN film_actors fa ON a.actor_id = fa.actor_id
+#         WHERE fa.film_id = f.film_id
+#         LIMIT 1) AS actor_name
+# FROM films f;
+
+# ^ Subqueries with `IN`:
+
+# ~ - Retrieve films that have either Leonardo DiCaprio or Tom Hanks as actors.
+
+# SELECT title
+# FROM films
+# WHERE film_id IN
+# (SELECT fa.film_id
+#  FROM film_actors fa
+#  JOIN actors a ON a.actor_id = fa.actor_id
+#  WHERE a.actor_name IN ('Leonardo DiCaprio', 'Tom Hanks'));
+
+#     title
+# --------------
+#  Inception
+#  Forrest Gump
+#  Toy Story

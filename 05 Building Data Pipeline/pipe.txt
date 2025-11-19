@@ -1,0 +1,691 @@
+ all right so now that we've
+gone through SQL we can finally get into
+building our first data pipeline this is
+going to evolve as the course progresses
+but we're going to start off by building
+this data pipeline from scratch using a
+python script and moving data that way
+we're also going to be using Docker to
+host both of our source and destination
+databases using postgress so you'll get
+to see how this all coincides and works
+together with Docker one thing to note
+before we keep moving on is there is a
+repo for this whole project you can see
+it here with a read me on how to get
+started and how everything works if you
+go up here to the branches you can see
+the evolution of this project so first
+we're going to be starting with just the
+main elt script and then we're going to
+be adding on a Cron job to show
+orchestration from there we're going to
+be adding DBT to the mix which we'll get
+into later and then also airflow and
+then eventually air bite so there's
+going to be this progression of the
+course to show kind of how a main elt
+script uh that's created manually would
+look and then as we add in more open
+source tooling you'll kind of see the
+power of how everything works together
+and why you know we are using these open
+source tools in the first place so just
+for your reference make sure to look in
+the description and you can find this
+link here to my GitHub repo with
+everything you need to see just in case
+you get stuck on something but for the
+rest of this project I'm going to be
+creating a new directory but it will
+directly reference this project so just
+keep an eye on this when you're working
+through it all right so I have my
+terminal open so let's go ahead and
+create our first directory here I'm
+going to say make and then for here I'm
+going to say elt and then we're going to
+CD into elt um and then from there we're
+going to say touch
+eltor
+script.py let's also create a Docker
+file so I'm going to use Docker compose
+in this so I'm going to say Docker
+compose and let's go ahead and open that
+up okay so now you can see we have two
+files that we just created we have the
+elt script and then we also have the
+docker compos file all empty but we're
+going to fill this out now the first
+thing we're going to do is actually fill
+out this Docker compose file in order to
+have the two databases that we need one
+being our source where our data is
+coming from and the destination where we
+want to send data to so that way we can
+use the alt script to move data between
+those two now we're going to use
+postgress for this example because we
+can use it as an open source database
+and so so let's go ahead and fill this
+out so the first thing we need is going
+to be the version and uh version three
+is going to be what I'm going to be
+using for the doc compos file now we
+list our services so in here this is
+where we name our first service and in
+this case I'm going to name it Source
+postgress that's going to be our first
+service now remember with yo files it is
+very crucial for you to have proper
+spacing within the file itself if not
+the yl file is not going to read
+properly and it'll actually error out if
+you don't follow the correct tabbing and
+indentation so keep that in mind um so
+the first thing we're going to do is
+list the image and for the image here
+I'm just going to say we want to pull
+from dockerhub the postgress image and
+the latest version of it so that way
+we're always up to date the ports so
+this is going to be very important for
+us in terms of accessing the actual
+service itself so with the source and
+the destination databases we need to
+expose the ports so that we can actually
+access them on the local host and so for
+this I'm going to say we're going to
+open this up on
+5433 and by default we need do 5432 I
+believe so let's go ahead and do that
+now for the networks we're going to
+create a network for all of our
+containers so you can look at all these
+Services as a single container in each
+single container contains an image that
+the runtime is going to use and so we
+actually need to create a network for
+all of these different containers to
+talk to now I'm going to name it _
+Network and we will see that at the end
+of this file we're going to have a well
+I can actually just do this right now so
+we're going to have a networks section
+and in there we'll list the _ network we
+also have to specify this is going to be
+a bridge driver um you don't have to
+worry about that what that means but
+just know that within the network all of
+the containers are going to recognize
+that this is the network we wanted to
+talk uh remember that is outside of the
+services tab this is going to be its own
+section here with its own properties so
+make sure that you're doing that there
+now within the source postest service
+we're going to do some environment
+variables here that are going to be very
+important for the first one we're going
+to do the
+postgress database so this is going to
+the name of our database and for the
+name we're going to say sourcecore DB
+keep it very simple uh the next one
+we're going to do is going to be the
+user so postgress user and this one let
+me uh actually should be this way not an
+equal sign it should be a colon my bad
+this is going to be user postgress as
+default and then obviously the next one
+is going to be password this you can
+change to however you want it to be I'm
+going to say secret for this one and now
+for the volumes this is going to make
+way more sense and I I should actually
+create this um this folder now but we're
+going to create an elt folder we're
+actually going to drag this elt script
+into that folder just so we can have
+some separation between everything the
+docker composed file will remain in the
+root but um for the next one we're going
+to say volumes and if we remember what
+we were talking about in the docker
+section the volumes is how we were able
+to persist data so each container can
+create a volume and then whatever we're
+doing inside of that Docker container
+will contain the data that we're
+utilizing within that volume so that
+data will always persist as long as we
+do not delete it from within Docker what
+I'm going to do here is I'm going to
+specify the path of so Source this will
+make a lot more sense in a second so
+Source IND justy uh init so we're
+actually going to have some data that
+we're going to initialize this postgress
+database with and the init SQL folder or
+file sorry that we're going to create
+inside of the source DB in nit folder is
+what we're going to utilize and so after
+we've done that we're going to map this
+uh so if you see the colon after this
+this uh directory we're actually mapping
+this to the directory within the docker
+container so you could see this as this
+is our local directory and we're going
+to map this over into the docker
+directory and where this is going to go
+is going to go into the docker entry
+point innit db. d/ init SQL okay so this
+should be exactly what it looks like for
+you and this is going to be the same it
+pretty much looks identical so we're
+actually going to do this and I'm going
+to do shift option down to duplicate
+this we're going to add a space here so
+this is going to be our very first
+service here which is going to be the
+source database and now what we want to
+create here is going to be the
+destination database uh and we're going
+to change the port here to
+5434 we're going to keep this on the
+network on the elt network now this also
+needs to change so this is going to be
+destination ZB we'll keep user and
+password the same and we actually don't
+want any volume section here why because
+we don't want to save the data every
+single time for testing purposes I want
+to make sure that the elt script runs
+every single time successfully and so if
+the data persists I can't confirm or
+deny that the elt script is actually
+working so that every single time we
+kill this Docker container I want the
+data to vanish so that's what we're
+doing here for the next service and the
+last one we're going to do for this
+section is going to be the elt script
+now why do we need to create one here
+well we need to create one in order for
+Docker to see that we're actually
+utilizing a script here to send data
+from the source and destination
+databases so we actually have to use
+Docker for this and use it for the
+runtime to actually run the script
+itself instead of us having to manually
+do it so what we're going to do here is
+utilize the manual Docker files at the
+same time of using Docker compos there's
+different reasons for for doing this I
+think it's just easier to run certain
+commands utilizing it this way and we'll
+actually see what what this is doing so
+it's going to look a little different so
+we're going to say build under the build
+property we're going to add some context
+uh and the context is essentially what
+file we're we're building off of and so
+we're going to say ltor script inside of
+the root folder so uh it's going to be
+here and it's going to be root in
+reference to where the docker file is
+and we're just going to say Docker file
+but I'm going to Capital I the D here um
+cuz that's what I'm going to do when we
+create it now the command we're going to
+run I think that's changed it the
+command we're going to run and we're
+going to put this in early brackets
+we're going to say python since this is
+a python file and then
+eltor
+script same thing with the networks so
+we're going to say networks and then _
+Network there now this is going to be
+one thing that we learned in Docker so
+the depends on property here is that
+this container depends on other
+containers and so if it has any
+dependencies this container won't
+initialize until the other containers it
+depends on are finished building and so
+if I say this depends on both the source
+as well as the
+destination services this script will
+not run until these two are finished
+initializing in which it does take time
+which would make sense right because we
+need to initialize the destination
+database because there is no way for us
+to move data if there is no data in here
+yet and this isn't even ready we don't
+want the script to run or else we're
+going to run into a lot of errors here
+so this is exactly why I wanted to use a
+Docker container for the elt script so
+that way we can control the way that it
+functions so now that we have this going
+on we're going to create a new file here
+we're going to say Docker file just like
+we said and now within the docker file
+this is where we're going to specify a
+couple things so obviously the structure
+is going to look a little different here
+but from is going to be the actual image
+we want to use so we're going to say 3.8
+h
+slim is going to be the first one that
+we're going to use here now what we want
+to do is we want to install postest with
+some command line tools so we're going
+to say run um and apt get since it's
+running off of Linux apt get update and
+and apt get install y
+postgress so that's going to install the
+postgress client there we're also going
+to copy so we're going to copy the
+contents of the actual elt script so
+that the docker container has access to
+it and so we're going to say elt or
+script.py this so make sure you have
+that period at the end and then the
+command we're going to run is again
+python
+_ so that is going to be the structure
+here now the next thing we're going to
+do is actually create our source
+destination and initialize it with some
+data so let's go ahead and do that so if
+you go over to the repo of the custom
+elt project you're going to see this
+folder called sourcecore
+dbor nit now now what this is primarily
+holding is a SQL file that contains all
+fake data so we're going to create a
+couple tables and then insert values
+into them so that's exactly what we're
+going to go do so let me go back and
+switch I'm going to create a new folder
+and we're going to name it Source dbor
+init as we just saw inside of there I'm
+going to do init SQL and if you remember
+it's exactly what we did here so we're
+pointing that exact file over into this
+directory of the container so that we
+have access to it we're creating a a
+mapping of this over into the docker
+container so that way we can actually
+run the commands to initialize the
+source database from there now inside of
+this what we're going to do is just go
+in here and copy I believe I can just
+copy everything here and paste it so
+that's exactly what you're going to do
+just make sure you have access to this
+copy everything that you see inside the
+folder so we can save some time going to
+create a couple tables and insert some
+fake data for us like I mentioned we're
+going to save that and now we can
+actually go about running this and and
+creating everything so the way to do
+that is going to be inside of our elt
+script so let's fill out elt script now
+all right so we are in our elt script
+here and there's a couple things that
+we're going to import so we're going to
+import the subprocess first so this is
+how we're allowing to control inputs and
+outputs and things like that we're also
+going to import time um this is going to
+be make sense a little bit later but the
+first thing we want to do is obviously
+double check and I know that the docker
+composed file checks to make sure that
+the elt script will not run un unless
+the source and the destination database
+are working but we can also run a
+fallback just in case so we're going to
+create this function here called weight
+_ 4ore postgress and uh some of the
+variables we need are going to be the
+host we're going to need the maxcore
+retries the default value here is going
+to be five delay in seconds we're going
+to leave at five so after that what goes
+inside this function uh we're going to
+say
+retries is zero while retries is less
+than Max retries
+we are going to say try results equals
+subprocess run and then in here we're
+going to say
+PG is ready this say hyphen H going to
+post here check equals true now this is
+all going to be correlated to postest
+directly capture output true and then
+the text is true there a couple checks
+here right I think I forgot something
+here move this over and then we're also
+going to put an if condition here if
+accepting connections so obviously we're
+pinging the actual database itself to
+make sure that it's ready to go or if it
+is accepting connections we're going to
+say print successfully uh connected to
+postest and then we're also going to
+return true here and accept subprocess
+do called process error as e we're going
+to say print
+and F error connecting to post address
+colon here I'm going to use that F here
+or sorry e for the error oh this to be
+inside
+retries if it errors we're going to add
+one to the retry plus equals 1 also
+going to add another print statement
+here and we're going to say f retrying
+in play seconds
+attempt rri this is all just for logging
+here and then Mac r
+eyes here see where this isue here
+outside of the print we're going to say
+time do sleep delay seconds and then
+outside of the accept print Max retries
+reached exiting in case all else fails
+and then we're going to return false
+Okay cool so that is going to be our
+check function here so I know that was a
+lot but we tries spelled that wrong both
+times all good okay that fix it well now
+we don't have any weird Squigly now
+we're going to get into actually
+building out the initialization of the
+source database and then moving on to
+the destination well we can also add
+this so we're going to say if not wait
+uh underscore 4ore postgress post equals
+sourcecore postgress then we're going to
+say exit with the eror with code one
+print um starting elt script well now we
+can actually do this so uh we're going
+to say sourcecore config
+open this object here and so the first
+thing we need to specify is going to be
+the DB name and we're going to be using
+dump files here if you're familiar with
+postgress we can use dump files to
+initialize the actual database but also
+use those and dump files into the
+destination so that's exactly how we're
+going to be using this batch script here
+for our elt and so we're going to say uh
+Source DB is going to be the name of our
+DB name it's actually not a uh sign it's
+going to be that and then uh let me add
+our here same thing here so we're going
+to say user is going to be what we
+specified so these are all information
+that we had in the docker compos file
+this is going to be the password um and
+then the password was secret now for
+this next one we're going to say host
+now the host should be the name of the
+service uh that we put inside of the
+dock compost file so we're going to say
+sourcecore poost that is going to be the
+source config now we're going to do the
+exact same thing for the destination
+config DB name is
+destination DB username is if I can type
+properly post address password is going
+to secret as well and then the host is
+going to destination underscore this
+destination yep no typos there perfect
+now we need to create the dump command
+for initializing The Source data so
+underneath here we're going to say dump
+uncore command we're going to say PG
+uncore dump which is the command here
+that we're going to use um the H flag
+hyphen H we'll use the sourcecore config
+and we're going to point to the host
+since that's our host um let me make
+sure that this has a comma for the user
+so we're going to say hyphen you we're
+going to say Source config and we're
+going to point it to user so you can see
+kind of what we're mapping each
+individual flag so the host user
+password all that stuff too so we're
+going to also do hyphen D for the
+database name and we're going to point
+point to sourcecore config Dame hyphen f
+is going to be the file that we're going
+to use and where we're pointing that is
+going to be data uncore dump needs to be
+single quotes
+dataor
+dump. if we add this flag high and W it
+will not prompt us for the password
+which we don't have to do every single
+time which is nice so the other thing
+too is we're going to set the
+environment variable to avoid the
+password dump so we're going to say
+subprocessor EnV equals di uh PG
+password equals sourcecore config
+password so now we we've created a
+password RPG password environment
+variable that will not ask us for the
+password every single time now we're
+going to execute this dump command so
+we're going to say subprocess dot run
+dump command which is the one we just
+created point it to the environment
+variable that we just created so
+subprocessor EnV and then check equals
+true so that's going to dump everything
+into the source database now we actually
+need to get everything from the source
+database over to the destination so
+we're going to create a load command and
+it's going to look pretty much identical
+to this so what I'm going to do is copy
+and paste everything here but we're
+going to make some slight modifications
+so instead of PG dump we're going to say
+psql so we're actually going to get into
+the SQL command line tool we're going to
+point it to the host but instead of
+source it needs to be destination the
+user is also the same so we need to
+point it to the destination database
+name is going to be the
+[Music]
+same now we need to or well we don't
+need this since we're not pointing it to
+a file well we do what we're actually
+going to do is concatenate this so we're
+going to put two commands here we're
+going to do hyphen a comma F we're going
+to delete the W uh and then we're still
+pointing it to the data. dump. SQL file
+now we're going to do the same
+environment variable with
+subprocessor EnV
+equals we're actually copy and paste
+this over again cuz I mean it's
+literally the exact same thing except
+we're going to be using the destination
+here destination config now we need to
+execute the load command um so what
+we're going to do is we're going to say
+subprocess do run load command EnV is
+going to equal subprocessor EnV and then
+we're going to do the check equals true
+again and we're going to print just for
+our own purposes ending elt script cool
+so now this is going to be our full on
+elt script now how do we run this well
+what we're going to do is use Docker to
+completely run everything here so let's
+go ahead and take a look at what that
+looks like because we've made everything
+and hooked everything up with Docker
+compos it's going to be a simple as this
+all we have to do inside of our terminal
+obviously make sure that we're in the
+directory that we created I'm going to
+run Docker compose up uh I forgot to do
+this so I forgot to change the host to
+postgress here um let me make sure
+that's that okay so I had a slight error
+but all we have to do is we're going to
+do Docker compose up what Docker compose
+all services. Source oh does it not need
+this uh I might have screwed up here
+again which is fine we all make mistakes
+so it doesn't actually need this
+section here uh let's see if that will
+fix it we're going to leave this in here
+all we're running into a couple things
+here so _ script so let's do let's just
+debug this live cuz why not/ scripts so
+this should just be elt I pretty sure
+there you go okay so just a couple
+errors here but hey nothing that's going
+to shake us up but so now that we've run
+Docker compose up we're actually going
+to go through and build out the images
+so we're pulling down from the docker
+compos or from Docker Hub to to uh build
+out these images so now what we can see
+is we might be running into something
+here but as you can see in the logs and
+let me pull this over so you can
+actually see it so through the logs what
+we've done is we have we've initialized
+the destination database and the source
+database which is good and then we've
+also created the database we've inserted
+a couple tables and then the values for
+them but it looks like we ran into an
+issue with the elt script uh starting
+elt script so it looks like that was
+good Trace back on line
+54
+[Music]
+uh okay so let's look at our PG script
+so you can kind of see like all the
+little nuances here with creating a
+batch script and like this is on purpose
+uh I I wanted to make sure that we ran
+into some issues here I mean obviously I
+would like to not run into issues but
+comes with coding comes with building
+out these things manually uh and we'll
+see that it gets a little bit easier to
+deal with later down the line
+um so on line 54 is when it said that we
+had a bug here so subprocess run dump
+command I think this should be a i u or
+capital u here go ahead and try this one
+more time so what we're going to do is
+Docker compose
+down type oh my God okay so the source
+is ready to connect still running into
+an issue here um on the subprocess still
+on line
+54 so we've started the elt script
+return nonzero exit status let's try
+without the chck back here that's not it
+DB name sourcecore DB post you got
+secret Source postgress
+destination for postgress okay so I've
+deleted the image on Docker let's try
+running this one more time let's build
+the image again and see if it fixes it e
+error oh I see the issue okay so I screw
+that up I think that should be good now
+so let's Docker comos down again dock ER
+compose up just a casual typo error here
+I believe it's still not going to work
+here cuz I think it's still read the old
+one so what I'm going to do is kill this
+Docker compose up or sorry Docker
+compose down rid of these now let's go
+into Docker and you can see kind of like
+what the troubleshooting so we built
+this image and I don't think it's
+changed it so I'm going to delete that
+um we're going to go back into the
+terminal here say Docker compos up so
+we're going to re build the image and it
+should there we go okay so now you can
+see after some troubleshooting and then
+some small typos here and there uh we
+have
+successfully gotten our logs back and
+then at the end we had our ending elt
+script so the way to check our work now
+is if we open a new terminal let me make
+this a little bit bigger let go back
+into our other directory so CDT I'm
+going to say Docker exact and this is
+from what we learned in the other
+tutorial on Docker so Docker exact and
+we're going to use the interactive flag
+here uh we're going to grab the name of
+our _ script one so I believe the full
+name of it should be this so we're going
+to grab I'm sorry we're not grabbing
+this we want to grab the destination
+name so we're going to grab _ postgress
+one so that's going to be the name then
+we're going to say psql we want to run
+the command line the postgress command
+line hyphen you with the user postgress
+now if I hit enter we're going to be in
+here the one thing we do need to do is
+we're going to say/ C for connect do the
+destination DB so now we can see that we
+are in the destination database now if I
+do slash this is back slash by the way
+or forward forward slash I think uh is/
+DT you can see that all of the tables
+are now inside of the destination
+database now if I do select all from
+actors now I need to add the semicolon
+you can see that all the data that we
+inserted into the Source database is now
+into the destination database this is
+now fully working it is not automated at
+all but you can see that our bat script
+is now successfully working just by
+simply taking the dump commands that are
+built into postgress and then moving
+those in to the destination database now
+this is postest to postest so this is
+very very simple but you can see that
+even this is a very basic script but
+there's a lot of moving Parts when it
+comes to building out a script manually
+and so when things change or if you're
+trying to connect postgress over into
+let's say another database type where
+you potentially have to match schema and
+things like that in this case we didn't
+have to worry about that because the
+same database same protocol and
+everything but if we're working with
+something else it can get very very
+tricky so that's why we're going to be
+implementing a lot more open source
+tooling 
