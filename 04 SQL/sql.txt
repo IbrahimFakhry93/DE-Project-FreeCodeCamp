@@ -1,0 +1,886 @@
+now let's move on to the SQL
+module where we're going to be using SQL
+but we're also going to start our own
+little database inside Docker as well so
+let's get to it so now that we have
+Docker set up and we know the basics
+we're going to move it on to SQL or SQL
+however else you want to call it but SQL
+stands for structured query language
+it's a standard language used for
+database creation and manipulation
+databases like MySQL or postgress use
+SQL for you to query any of the data
+within their own tables so let's go
+ahead and start our playground we're
+going to set up a database using
+postgress within a Docker container and
+then we can create our own tables with
+fake data to play around with and we'll
+use them later on in the course as well
+all right so first things first is I
+have a terminal open and I've created a
+data engineering database directory
+because we're using Docker we do not
+have to install postgress locally what
+we can do is run the command Docker pull
+postgress and what that's going to do is
+look up the image of postgress on the
+docker Hub pull the latest version of
+that down and now we can actually create
+a container that's running the postest
+image so now we got to start our postest
+container now that we have the image so
+I'm going to say Docker run the name of
+this container is going to be data
+engineering postgress uh the environment
+variables that we that I want are going
+to be related to postgress which is
+going to be
+postgress password and what that's going
+to be is just going to be
+secret and then I'm going to do the D
+flag and we're going to say we're going
+to use the postgress image go ahead and
+run that now I have my container now
+what I want to do is I want to create a
+new database inside of postgress so I'm
+going to say Docker exec hyph U for the
+user which is just postgress as default
+the name of the container which is just
+data engineering of
+postgress going say create DB
+and the name of the database is going to
+be
+postgress
+DV now that we've run that we've created
+a sample database inside now let's go
+ahead and connect to it so I'm going to
+say Docker
+exec
+slit data
+engineering
+postgress
+psql hyphen U for the user on postgress
+and the name of the database which is
+going to be
+postgress now we are inside as you can
+see of the postgress database if I do
+/dt no current tables as of right now so
+that's exactly what we're going to do
+we're going to create our first table I
+have these commands already written out
+so I don't waste as much time so the
+first thing I'm going to do just for an
+example is create a table called users
+so inside this command you see a couple
+things so we have an ID of the type
+serial which is also our primary key
+here as an identifier we have a first
+name which is at most 50 characters we
+have a last name which is the same thing
+we have an email that is also characters
+but we want it to at least be 100 and
+then we have a date of birth which is
+just in the type of date so we're going
+to hit enter it's going to show us that
+we have a table so now if I do /dt we
+can see that the users table is now
+created and populated inside of this
+database I'm going to go ahead and copy
+in some fake data as well and don't
+worry this will all be in the
+description below so that way you can
+copy and paste this in as you follow
+along so I'm going to and copy and paste
+this and this is simply just user so it
+contains a first name a last name an
+email and date of birth so let me go
+ahead and enter and you can see it
+entered in 14 records so now this brings
+us into the First Command we're going to
+learn so the First Command we're going
+to want to learn is the select command
+and it's pretty self-explanatory as you
+saw already we entered in 14 rows of
+data and if I wanted to select anything
+from that table I'm going to need to use
+the select command so I'm going to say
+select and I'm going to add this
+asterisk what the asterisk typically
+means is a wild card pretty much meaning
+you want all of the columns within a
+table so you can read this query as
+select all now I'm going to add from and
+then the last part of this is going to
+be the table name so I'm going to say
+users and do not forget this is very
+important that every query needs to end
+in a semicolon otherwise the query won't
+go through so make sure you always add a
+semicolon at the end of every query so
+once I hit enter you're going to see
+that I get back a formatted view of the
+table that I just queried we saw before
+that we entered in 14 rows of data and I
+see that I get exactly 14 rows back all
+having the ID first name last name email
+and date of birth formatted in a much
+more pleasing way than what we see up
+here the select query is going to be a
+frequently used command by everybody who
+uses SQL so make sure you know it and
+understand it but again very
+straightforward another command that
+gets used in conjunction with select is
+also going to be distinct we use
+distinct in conjunction with select if
+we want a specified value within a very
+particular column so let's say we want
+every single email within the users's
+table what we'll say is we're going to
+say select
+distinct email
+from and then we're going to say users
+table so again we're reading this back
+if you haven't noticed already you
+typically all the SQL commands are going
+to be in all caps keep in mind you do
+not need this but it is much easier and
+it is probably best practice to
+capitalize every command that is SQL and
+lowercase everything that is either a
+table or some type of value that you
+need but if we're reading this back we
+want to select distinct emails from the
+user's table so again it reads just like
+English we add the semicolon if we hit
+enter it's going to give us just the
+emails in every single distinct email
+now keep in mind this is not in order
+but we do get 14 rows of data back we
+can see that the query was successful so
+that's how you can select data from the
+whole table to get a better view or
+select distinct values within a
+particular column but let's move on to
+other commands so now that we have our
+users table that has data that exists in
+there what if we wanted to update some
+information say an email if a user
+changed their email or a date of birth
+if they entered it wrong this is where
+the update command comes in handy so
+let's say for example if we go back up
+to our table that we wanted to change
+John's email so what we're going to do
+is we're going to say update so the
+query starts with update now after
+update we're going to enter the table
+name so we're going to say users and
+then we're going to say set so now we
+want to address what column and value we
+want to change in the users table so
+we're going to say email and then that's
+going to equal whatever our value is
+going to be inside of single quotes so
+for example we can just say you know new
+uncore mail@gmail.com
+the problem with this query is if we
+were to hit enter on this it would
+change the emails for every single row
+inside of the user's table which isn't
+exactly what we want and if you were
+doing this in a production database it
+would probably go Haywire so how can we
+modify this query for it to actually
+only update one person's email inside
+the table what we can do is introduce
+the wear command so after we set the
+email to the new value we're going to
+say where and then we're going to say
+first uncore
+name so now we're saying where the first
+name so we're selecting a particular
+first name is equals to and the first
+name in this case is going to be John
+and we're going to hit a semicolon so
+again we're going to backtrack here
+we're going to update the users table
+we're going to set the email so we're
+selecting the column email to newor
+mail@gmail.com
+where are the first name is equals to JN
+so that means that we're going to look
+for JN inside of the first name column
+once we find JN we're going to go to his
+email and change the email over to the
+new value so if I hit enter we can see
+that we have one updated change now if I
+say select go back to the cap select all
+from users table we're going to see that
+John's actually changed so he gets moved
+down he still has an ID of one but his
+email is now newor Emil mail.com so
+again if we're using the update command
+it's very helpful if anything changes in
+terms of data and we need to update
+something that's where we' use the
+update command now let's say you wanted
+to enter in new data into a table well
+that's where the insert command comes in
+if you're starting to see the pattern
+here SQL commands are very
+self-explanatory and the fact that they
+read English and kind of like python so
+if you want to insert new values you
+would reach for the insert command so
+we're going to create a new table called
+the films table add some films and then
+then show the insert command but go more
+in depth into it all right so we are
+back in our database and I have the
+command here already I'm going to create
+the table of films again so create table
+is also a command that we didn't get
+really into but again self-explanatory
+we're just creating a table here called
+films within the parentheses we're going
+to see the film ID with a type we have a
+title a release date a price which is
+new that we're seeing a decimal type we
+have a rating and then a user rating the
+one thing to note within the user rating
+is that we're checking to see if the
+number value that goes into user rating
+rating is greater than or equals to 1
+and that the user rating is less than or
+equals to 5 so obviously we want to go
+between 1 and 5 here so if I hit enter
+we're going to see that if I do /dt
+which is like LS in a normal bash
+terminal is kind of like listing every
+table inside of a database we see that
+the films table is now created so let me
+go ahead and copy my insert command here
+and we see that we have insert into so
+again self-explanatory want to insert
+values into the films table within the
+first set of parentheses we see the
+names of the columns that we want to add
+and again those are fitting and matching
+exactly what we have on this side right
+here when we created the table after the
+first set of parentheses we have a
+values command and after that everything
+inside of the parentheses are values
+that have to match the order in which
+you placed every single column so the
+first one we have is a title which is
+these are all not fake data but I have
+them generated so we have Inception the
+release date which is right here in the
+date format we have its price in a
+decibel format we have the rating of the
+movie as well as the user rating of the
+movie and so you can see it fits within
+this set of parenthesis it fits the
+order of this set of parenthesis so if
+we hit enter right now you can see that
+we've entered in 20 rows of data if I
+say select
+all from
+films we can see that a little out of
+place here because my terminal is a
+little big but we can scroll down and we
+can see that all the data was entered in
+go ahead and skip this line let me make
+it smaller so that we can see more of it
+but if I hit that again we can see the
+table is formatted properly the same way
+that the user's table was but that right
+there is how you can insert data into a
+table it's doesn't have to be that big
+every single time if we just wanted to
+insert one more row it would just be the
+exact query back here except just one
+more line another really useful command
+that you should know is going to be the
+limit command imagine you have a
+database that has thousands upon
+thousands of Records but you only need a
+certain amount so you want to limit the
+query to that amount that's where limit
+comes in so as we saw in the new films
+table we saw that we have 20 rows but
+what if we only want less than 20 so
+let's say five that's where we would use
+limit so let's do select
+all from we're going to go into the
+films table but after films typically we
+would have that semicolon to end the
+query but now we're going to add a limit
+and then the value of what we want the
+limit the query to so because we have 20
+we want less than 20 here let's just say
+I only want five records to come back if
+I hit enter you're going to see that I
+only get the first five records in the
+table to come back so that is a very
+easy easy to understand command here and
+very useful to limit the amount of
+records that come back cuz you could
+imagine as I said before if you're
+trying to query a database or a table
+that has thousands of records that query
+could take a very long time so if you
+want that to speed up a little bit and
+you only need a certain amount to see
+what the data looks like if it's
+formatted properly the limit command is
+going to be your best friend the next
+thing we're going to cover is going to
+include some math here but we're going
+to go over aggregate functions in SQL
+aggregate functions in SQL allow us to
+do computations on top of a single
+column through every single row of a
+table it's incredibly useful in data
+analytics where it allows us to
+calculate important metrics and gain
+insights from our data so let's get into
+the first one the first one is going to
+be count now the count function allows
+us to count the number of rows depending
+on if it matches the condition that we
+give it so now that we have our films
+table let's say we wanted to count the
+amount of films if we don't know how
+many are inside the table let's start
+the query here so let's say select right
+after the select statement we would say
+count in the parentheses we would count
+however many we want but if I add an
+asterisk here that's going to say count
+every single record inside of this table
+if it matches the condition I'm about to
+give it so we're going to say count from
+film's table so again this is selecting
+the number of Records within this
+condition here and what we give it is an
+asterisk for all from the films and what
+this should give me back is the number
+20 because we have 20 rows inside this
+column so just remember within this
+parenthesis here is going to be the
+condition depending on what that
+condition is it will spit back to you
+always a number depending on if it's
+true within that condition and count is
+really useful for that the next
+aggregate function we're going to look
+at is going to be the sum function now
+we would use sum to calculate the sum of
+all the numbers in a numeric column so
+if we take a look here we have a prices
+column so now if we wanted to let say
+calculate the sum of every single price
+in this column we would say select sum
+inside the parentheses we would say
+price because we want to use the price
+column from the films table so now if we
+look back at this we're selecting the
+sum function is going to look into the
+price column and add up every single
+number value within it and it will spit
+back to us the total sum of every single
+movie that we have inside this table so
+if you were to have gone to every single
+one of these movies at this price you
+would have spent
+$228.8 now let's say we want to get the
+average of something inside of our table
+say for example we want the average user
+rating of movies in this table well
+that's where the average statement or
+the average function comes in it's going
+to look the exact same as the sum
+function so we're going to say select
+but instead of sum we're going to say
+average or AVG and inside the
+parenthesis we're going to enter in the
+column that we want to take take a look
+at which is going to be user uncore
+rating close the parenthesis there and
+then we're going to say from the films
+table and that then gives us an average
+of every single user rating that the
+movies have which is going to be 4.6 and
+lastly one of the more useful ones is
+going to be Max and min max and Min are
+used to find the highest and lowest
+numeric value within a column so let's
+look at our price column again if we
+wanted to get the lowest and the highest
+values in the prices column our query
+would look something like select and
+then we would say Max inside the max
+column our condition would be the column
+we want so we want price we're going to
+add a comma here and we're going to say
+Min again parenthesis and looking at the
+prices
+column from the films table now if I hit
+enter here we're going to see the max
+value here was $4.99 and the minimum was
+$7.99 so the the cheapest movie out here
+that was in the table was
+$77.99 and the max was $4.99 so very
+helpful to sift through a big table if
+you're just trying to find the highest
+value and the lowest value another
+useful statement in SQL is going to be
+group by we use Group by to get
+identical data into groups it's also
+typically used with aggregate functions
+like the ones we just did like count sum
+min max average so that we can group the
+result sets into one or more columns
+let's take a look at how this would look
+if we were to use Group by with the
+average aggregate function let's take a
+look at the films table again and let's
+say we want to group the average user
+rating based off of the movie's actual
+rating how would we do that we're going
+to select the rating column here and
+then we're going to add a comma and add
+our aggregate function since we're
+stringing together two selects and
+inside the condition of the average
+function we're going to put in the user
+uncore rating
+column from the films Table after that
+we're going to say Group
+by and what we wanted to group that by
+is by the rating so we're going to get
+the average of every user rating inside
+of the film's table and then group the
+results by each individual rating so we
+have PG-13 we have R and we have G npg
+so we should see four rows inside of the
+results after I had enter you can see
+the average rating for R-rated movies
+was
+4.61 the average rating for PG-13 is 4.5
+PG was 4.8 and G was 4.4 so now you can
+see how this could be useful to group
+together identical forms of data and
+compare them against each other this is
+especially important in data analysis
+again it allows us to organize the data
+into a different way and then run
+computation on top of that especially
+with them being in groups it's also
+important to note the order that we did
+this query if we were to have switch the
+rating and the average functions here we
+would have got a different result so the
+order of the the query does matter
+depending on how you want to format your
+data so keep that in mind one cool
+feature you can do in SQL is join two
+different tables that have different
+data sets and get a result that combines
+both of the data you need into a
+formatted table there are two different
+commands that we can use for this and
+we're going to go over those right now
+the first one being in join and the left
+one being left join they do very similar
+things but there are key differences
+that make them unique so let's go over
+what those are right now but before we
+do that we're going to need to create
+another table that we can use data
+against alongside our existing films
+table so let's first create the film
+category table so I'm going to go ahead
+and copy and paste this so we have a
+category ID a film ID and the category
+name these categories match every single
+movie that we currently have inside of
+the films table now I'm going to go
+ahead and insert our values here so let
+me go ahead and do that hit enter enter
+we have 39 records here so now if I do
+select all from the Filmore category
+table now we can see that we have our
+category IDs and we have our film IDs as
+well as their category names go ahead
+and Skip all these lines here so now we
+have two tables that we can use to join
+with each other if we want a table where
+we have all the movies as well as the
+film categories we're going to learn
+about two things right now we're going
+to learn about how in join works and
+we're going to learn about how aliases
+work in your SQL queries so let's go
+ahead and get to that so in order to
+understand how joins work we need to
+First create some tables that go against
+the data that we have currently in all
+those tables and insert some new ones so
+that we can join them together so the
+first table we're going to create is
+going to be the actor's table so this is
+going to have an actor ID and the actor
+name I'm going to have all the actors
+from every single film that we have
+currently and then we're also going to
+create the film actors table and this
+will make sense in a second so this one
+is going to have the film ID and actor
+ID as well as a primary key and now into
+the actors table are going to go every
+single name of each actor that are
+associated with the specific films let
+me go ahead and insert those and now we
+also have the film actors which are
+going to include their ID
+as well as the film IDs so now you can
+see that we have two separate tables
+that we just created if I do select all
+from the actors table we can see that we
+have actor ID as well as the actor name
+all in this table and then if we say
+select all from Filmore actors table you
+can see that we have a film ID and an
+actor ID so this goes with multiple
+different tables that we have
+relationships with and now we can focus
+on how to join all this data together
+and make sense of inner join and left
+join okay so like I said we're going to
+focus on the inner join and we're also
+going to add some aliases and what those
+are going to look like let me copy and
+paste this in here so we can go over
+what this looks like first we have our
+select statement and now we're going to
+go into what we're selecting so we have
+f. film ID and this will make sense in a
+second we have f. tile we have a. actor
+name so we're selecting the film ID
+we're selecting the title name as well
+as the actor name that's what the
+results are going to look like now we're
+going to select from the films table and
+after the films table is a space and an
+F so the Alias that we want to give our
+films table is f so now that anytime we
+want to access the films table all we
+have to do is type f as we can see here
+after we select the films table and add
+the Alias we're going to do an add our
+inner join statement this is where we're
+going to add different tables and join
+them together so after you say in join
+we're going to take on the film actors
+table and we're going to give it an
+alias of fa so short for film actors and
+we're going to join these two tables on
+which is why we have on so we're going
+to select the film's table and then the
+film ID from the film's table if it
+equals the same film ID from the film
+actor's table that's where we're going
+to join those rows and columns on we're
+going to add another inner join we can
+string on as many joins as we want so in
+this this case we're going to do two
+because we're bringing on the actor's
+table so we're going to join the actor's
+table and we're going to give it an
+alias of a on the fact that any actor
+IDs from the film actor table is also
+equals to the actor IDs from the actor's
+table and lastly we see order by that's
+a statement we haven't gone over yet but
+we're going to order them by the film
+IDs from the film table so we're going
+to order them by those film IDs but
+we're going to go from the film table so
+I know that's a lot to take in but let's
+go over it one more time the final table
+that we are going to see we're going to
+have three different columns we're going
+to see the film ID from the film's table
+we're going to see the title from the
+film's table and then the actor name
+from the actor's table and now the
+reason we're not seeing the film actor's
+table in the select column is because
+one we're using the film actor's table
+as a bridge to connect the actor names
+to their correct films that's what we
+did here on the join as we took our film
+actors and if we look up at the film
+actors table we can see that we only
+have a film ID and an actor ID each of
+them are just numbers but they
+correspond to an actor as well as a
+movie so we took the data that we have
+from the film actor table and we joined
+it on top of the film table now if there
+was a film ID that matches any of the
+movies inside of the movies or I'm sorry
+inside of the films table then we're
+going to match those together take take
+that data and use it for the results
+section here now that bridge allows us
+to say okay well now we want to join the
+actors table on top of the film actor's
+table now now we can associate actors
+with the correct movies now that we have
+the film IDs and the actors that go with
+them so we're taking on the actor's
+table in the form of or in the Alias of
+a on top of film actors and now if we
+have any actor IDs that match the film
+IDs in the film ID or in the film actors
+table we're going to take that data and
+then use that here and then we'll
+obviously again order them by the film
+ID in the films table a lot to take in
+again but if I hit enter we're going to
+see that we have a very nice formatted
+table here like I said we're ordering by
+the f. film ID which we use up here as
+well so everything is ordered
+chronologically or you know in numerical
+order 1 2 3 4 and then that film ID will
+match Inception and then Leonardo
+DiCaprio checks out was in Inception Tim
+Robbins was in Shashank Redemption
+Marlon Brando was in Godfather so you
+can see on and on that this does make
+sense and now if we were to go and do
+select all from the films
+table we can see that Inception had a
+film ID of one so that checks out right
+there um and then if we go to
+select all from the actor's
+table we can see that Leonardo DiCaprio
+had an actor IDF one so all of that data
+that we just took in actor idea of one
+and film idea of one matches exactly
+what it was between all the three
+different tables that we had a
+relationship with all to give us one
+very nice table that we can now use for
+any form of data analysis or what any
+sort of computation that any of your
+teams need and that's really a awesome
+way to join multiple different tables
+this was an example of inner join left
+joins do something similar but there is
+a catch between the two that make them
+unique as I mentioned before so let's
+take a look at what left joins look like
+so in order for joins to make sense we
+need to add another entry into the films
+table so let's go ahead and do that I
+have here a single entry that I will
+copy and paste right now so I am simply
+going back into the films table and
+entering the mystical Adventures movie
+so me go ahead and hit enter and then if
+we do select all from films we can see
+that the mythical Advent or mystical
+Adventures is now added at the very
+bottom so now we have 21 so now let me
+copy the left join query that we want to
+do here and now it's going to look very
+similar to the inner join where we're
+taking the film ID from the films table
+the title from the films table and the
+actor name from the actor's table again
+we're adding the aliases here with the
+letter f for the the film's table we're
+left joining the film actors table again
+using that as the bridge uh it's
+essentially going to be the same query
+but if we were to hit enter on this
+right now you can see that we still do
+have the table filled out properly and
+formatted properly but we have mystical
+Adventures but with no actor so the
+thing with left joins is even if there
+is a null value or it's missing a value
+the result table will still show even if
+there isn't an exact match now if we
+were to go back up to the query where we
+do the inner
+join after we've now added the new movie
+we can see that it doesn't show up so in
+join if there is a null value and the
+condition doesn't the condition isn't
+fully met we will not see that in the
+result table so for the result table you
+see that we only have 20 entries as
+opposed to the left join where we have
+the 21 but we just have a missing actor
+so to now show that this is actually
+true we're going to insert a new Act
+actor as well as the new actor IDs to
+populate the movie so the movie we added
+was a fictional movie so let's go ahead
+and add the actor's name so we're going
+to add Jane do and John Smith and we're
+also going to add the film actors as
+well so 21 and22 so if we were to run
+our left join command again we're going
+to see that mystical Adventures actually
+does populate now but we're going to see
+that the mystical Adventures actually
+does populate now with the actor name
+so this kind of just proves that no
+matter what left joins will always show
+the result table even if the conditions
+aren't meant and there is a null value
+there's two more commands we're going to
+go over the first one is going to be
+Union and the second one is going to be
+Union all these do get a little mixed up
+with the inner joint and left joint
+since they kind of function the same way
+in terms of how they work but they are
+completely different and let's go over
+what makes them unique here so the next
+two commands are going to be Union and
+Union all these are going to be the last
+commands that we go over so we actually
+use the union operator to string
+together two select statements but with
+the Union statement it actually removes
+any duplicate rows with the same values
+but with Union all you're going to get
+duplicate rows in the result set table
+so it kind of functions the same way as
+in join and left join in terms of their
+differences but the queries are going to
+be very different so let's go ahead and
+take a look at what that looks like all
+right so back in the terminal we're
+going to copy this Union command and
+we're going to go over every single line
+so with this command we're going to
+select title as name from film so we're
+going to use the name Alias we never use
+the as operator it is completely
+optional when giving aliases to use as
+so you can omit this when doing it but
+it makes a little bit more clear if we
+say Select Title as name so instead of
+the column being named title we're it's
+going to be called name when we get the
+result table from the films table and
+then we're going to add the union
+operator here and then string on on
+another select statement so we're going
+to select the actor name as name from
+the actor's table and we're going to
+order them by name so if I hit enter
+here you're going to see that doesn't
+really make too much sense but we can
+see how it works kind of we have one
+column since we named them both name
+down here and we're putting down this is
+an actor this is an actor this is the
+name of the movie so we put together a
+bunch of names and we order them
+alphabetically by name now if we were to
+do that again
+but instead we were to change the actor
+name to actor and hit enter and it would
+be the same thing for Union all except
+remember there are going to be duplicate
+rows or duplicate values within here so
+if we were to scroll down you can see
+that we get Tom Hanks twice whereas in
+the table above we only got Tom Hanks
+once so again this is a prime example of
+Union and Union all so we're putting
+together all the data that we're
+grabbing using two select statements
+into one result table another cool
+little thing you can do in SQL that's
+actually going to be very useful later
+down the line especially as a data
+engineer is going to be something called
+subqueries we've seen them a little bit
+here by using the parentheses but let me
+go ahead and show you what one looks
+like and then we'll go over it so let me
+copy and paste it over so as you can see
+here we have first a select statement
+where we're selecting the title now
+inside of that we have a par or we have
+a Comm and then inside a set of
+parentheses we're using another select
+statement but we're selecting the actor
+name and again using aliases and a join
+so from actors Alias of a we're joining
+the film actors again using it as a
+bridge and then the final result from
+this select statement is going to be the
+actor name and then we're pulling this
+from films using the Alias F so this is
+just a string select statement but a
+subquery so before this finishes we're
+going to run and find the title from the
+films table but then we're also going to
+look here SQL will go ahead and execute
+this query and then add it into the
+results table so right now what this is
+doing is it's retrieving the films title
+along with the name of one of its actors
+so if we go ahead and hit enter you can
+see that it's kind of the same thing
+what we did earlier in the course where
+we joined two different tables but we
+used a subquery instead subqueries can
+be used in multiple different ways we
+saw this being used in the select Clause
+here but we can actually use this also
+with the in operator so if we wanted to
+retrieve films that have either you know
+let's say Leonardo DiCaprio or Tom Hanks
+this is what the query would actually
+look like so let me go ahead and show
+you so we're selecting the title from
+the films table where the film ID in and
+then this is where our subquery would
+start this is where we're going to say
+hey we're looking for any films and
+we're want the name of them if the
+condition is met here where the actor's
+name is either Leonardo Caprio or Tom
+Hanks so we're looking for both of these
+movies so we're going to say Obviously
+go into the film actors table and do
+another join here so we're adding that
+condition by joining in other tables and
+that's where subquery can really become
+useful here so if I enter you're going
+to see that we're only going to get the
+titles back and Inception Force gum and
+Toy Story are going to be the three
+movies that contain Leonard DiCaprio or
+Tom Hanks and obviously most of us have
+seen that so that checks out but that is
+a quick little intro and awesome little
+thing we can do in SQL
+subqueries
