@@ -55,8 +55,15 @@
 # *       POSTGRES_PASSWORD: secret
 # ? Note: No volume here → data resets each run, so we can test the pipeline fresh.
 
-# ~   elt_script:
-# *     build:
+
+#! why we place elt_script here in composer file
+# * to tell Docker that we utilizing a script here (elt script)
+# * to send data from the source to the destination databases
+# * so we place it in the docker container which is runtime instance
+# * so Docker will run this script instead of us having to manually do it
+
+# ^   elt_script:
+# ~     build:
 # *       context: .
 # *       dockerfile: Dockerfile
 # ~     command: ["python","elt_script.py"]
@@ -135,6 +142,9 @@
 
 # ? Connect to destination DB:
 # * docker exec -it <destination_container_name> psql -U postgres -d destdb
+# ^ ex in our case:
+# ~ docker exec -it 05buildingdatapipeline-destination_postgres-1 psql -U postgres
+# * \c destination_db : to check the connection to destination database
 # * \dt             # list tables
 # * SELECT * FROM actors;   # confirm data copied
 

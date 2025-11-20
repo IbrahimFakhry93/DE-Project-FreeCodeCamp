@@ -1,7 +1,9 @@
+#
 # & Data pipeline (PostgreSQL + Docker + Python) — full walkthrough
 
 # ? Goal
-# * Build a simple ELT pipeline: Source Postgres → dump → load → Destination Postgres, orchestrated by Docker Compose and a Python script.
+# * Build a simple ELT pipeline: Source Postgres → dump → load → Destination Postgres,
+# * orchestrated by Docker Compose and a Python script.
 # * You’ll understand: why we expose ports, how services talk over a Docker network, and why YAML indentation matters.
 
 # & Why expose ports (5433:5432 and 5434:5432)
@@ -32,7 +34,7 @@
 # ! version: "3.9"
 # ! services:
 # ^  source_postgres:
-# ~     image: postgres:latest
+# ~     image: postgres:latest               # pull from dockerhub the latest version of postgress image
 # ~     container_name: source_postgres
 # ~     ports:
 # *       - "5433:5432"
@@ -41,7 +43,7 @@
 # *       POSTGRES_USER: postgres
 # *       POSTGRES_PASSWORD: secret
 # ~     volumes:
-# *       - ./source_db_init:/docker-entrypoint-initdb.d
+# *       - ./source_db_init:/docker-entrypoint-initdb.d   #: look down for explanation of this path
 # ~     networks:
 # *       - elt_network
 # *
@@ -56,7 +58,13 @@
 # *       POSTGRES_PASSWORD: secret
 # ~     networks:
 # *       - elt_network
-# *
+
+#! why we place elt_script here in composer file
+# * to tell Docker that we utilizing a script here (elt script)
+# * to send data from the source to the destination databases
+# * so we place it in the docker container which is runtime instance
+# * so Docker will run this script instead of us having to manually do it
+
 # ^   elt_script:
 # ~     build:
 # *       context: .
@@ -68,6 +76,8 @@
 # ~     networks:
 # *       - elt_network
 # *
+# ? Explanation: The script container waits until both DBs are ready before running.
+
 # ! networks:
 # *   elt_network:
 # *     driver: bridge
@@ -77,7 +87,67 @@
 # * Keys aligned at the same level (services, networks) must have identical indentation.
 # * Lists (e.g., ports, volumes) use a dash with one space: "- \"5433:5432\"" on its own line under the key.
 
-# & What each section does
+#! Initializing Postgres Database with Data
+# ^ We will prepare sample data to initialize the Postgres database using an init.sql file.
+
+# * Create an init.sql file inside the source_db_init folder.
+# * This file contains SQL commands to set up tables and insert initial data.
+# * Docker will use this file during container startup.
+
+# & Mapping Local Directory to Docker
+# ^ The colon (:) in Docker volumes maps a local path to a path inside the container.
+
+# * Local directory: ./source_db_init/init.sql
+# * Container directory: /docker-entrypoint-initdb.d/init.sql
+# ^ Effect:
+# * Docker copies our local init.sql into the container’s initdb.d folder.
+# ^ Purpose:
+# * Ensures the database is automatically initialized with our SQL script when the container starts.
+
+# & Docker Compose Volume Example
+# * Add this to docker-compose.yaml:
+# volumes:
+#   - ./source_db_init/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+
+# ^=============================================================
+
+#! Destination Postgres Setup (Testing Mode)
+# * We intentionally avoid using volumes so data does not persist between runs.
+# * This ensures the ELT script is tested fresh each time.
+
+# ^ Reason:
+# *    - Persisted data could hide whether the ELT script worked correctly.
+# *    - By removing volumes, every container restart wipes the database.
+# *    - Guarantees reproducible tests: ELT must succeed from scratch each run.
+
+# & docker-compose.yaml (destination_postgres service)
+# ^   destination_postgres:
+# ~     image: postgres:latest
+# ~     ports: ["5434:5432"]          # expose destination DB on localhost:5434
+# ~     environment:
+# *       POSTGRES_DB: destdb
+# *       POSTGRES_USER: postgres
+# *       POSTGRES_PASSWORD: secret
+# ? Note: No volume section → data resets each run, pipeline always starts clean.
+# ^===============================================
+
+#! Docker Compose: depends_on Property
+# * Ensures container startup order → one service waits until its dependencies are ready.
+
+# * Syntax example:
+# ~     depends_on:
+# *       - source_postgres
+# *       - destination_postgres
+
+# ^  Meaning:
+# *    - This container will not initialize until both `source_postgres` and `destination_postgres` are built.
+# *    - Guarantees that dependent services (like the ELT script) only start after databases are available.
+# *    - Prevents race conditions where a script runs before its required DBs are ready.
+
+
+# ^=================================================================================
+# & What each section does in compose yaml file above
 
 # ? services.source_postgres
 # * Pulls the official Postgres image.
@@ -91,18 +161,25 @@
 
 # ? services.elt_script
 # * Builds a Python container from your Dockerfile, runs the ELT script.
-# * depends_on ensures containers start in order; note: it doesn’t guarantee DB “readiness”, only that containers are started.
+# * depends_on ensures containers start in order;
+
+# ^ note:
+# * it doesn’t guarantee DB “readiness”, only that containers are started.
+
 
 # & Dockerfile (for the Python ELT container)
 
 # ? Purpose
-# * Provide Python runtime + Postgres CLI tools (pg_dump/psql) to perform ELT.
+# ^ Provide: Python runtime + Postgres CLI tools (pg_dump/psql) to perform ELT.
+# ^ Python runtime means the python environment (or py engine or the py interpreter) that runs the python code
+# ^ pg_dump for extracting data into an sql file, psql for loading this sql file into destination
 
 # * FROM python:3.11-slim
 # * RUN apt-get update && apt-get install -y postgresql-client && rm -rf /var/lib/apt/lists/*
-# * COPY elt_script/elt_script.py /app/elt_script.py
+# * COPY elt_script/elt_script.py /app/elt_script.py       : # copy ELT script into container
 # * WORKDIR /app
 # * CMD ["python","/app/elt_script.py"]
+
 
 # & Source DB init SQL (auto-seeded)
 
@@ -126,28 +203,68 @@
 # & ELT script logic (Python subprocess + pg_dump/psql)
 
 # ? Readiness check (because depends_on ≠ “ready”)
-# * def wait_for_postgres(host, retries=10, delay=3):
-# *   import subprocess, time
-# *   for i in range(retries):
-# *     try:
-# *       subprocess.run(["pg_isready","-h",host], check=True, capture_output=True, text=True)
-# *       print(f"{host} is ready"); return True
-# *     except subprocess.CalledProcessError:
-# *       print(f"Waiting for {host}... ({i+1}/{retries})"); time.sleep(delay)
-# *   raise RuntimeError(f"{host} not ready after retries")
+# ~ Run a fallback (double check) that elt script will not run unless source and destination databases and working)
+
+
+def wait_for_postgres(host, max_retries=5, delay_seconds=5):
+    """Wait for PostgreSQL to become available."""
+    retries = 0
+    while retries < max_retries:
+        try:
+            result = subprocess.run(
+                ["pg_isready", "-h", host], check=True, capture_output=True, text=True
+            )
+            if "accepting connections" in result.stdout:
+                print("Successfully connected to PostgreSQL!")
+                return True
+        except subprocess.CalledProcessError as e:
+            print(f"Error connecting to PostgreSQL: {e}")
+            retries += 1
+            print(
+                f"Retrying in {delay_seconds} seconds... (Attempt {retries}/{max_retries})"
+            )
+            time.sleep(delay_seconds)
+    print("Max retries reached. Exiting.")
+    return False
+
+
+# * Use the function before running the ELT process
+if not wait_for_postgres(host="source_postgres"):
+    exit(1)
+
+
+# * Configuration for the source PostgreSQL database
+source_config = {
+    "dbname": "source_db",
+    "user": "postgres",
+    "password": "secret",
+    # ^ Use the service name from docker-compose as the hostname
+    "host": "source_postgres",
+}
+
+# * Configuration for the destination PostgreSQL database
+destination_config = {
+    "dbname": "destination_db",
+    "user": "postgres",
+    "password": "secret",
+    # ^ Use the service name from docker-compose as the hostname
+    "host": "destination_postgres",
+}
+
 
 # ? Main steps (extract → load)
-# * import subprocess
+
+# ^ import subprocess
 # * SOURCE = {"host":"source_postgres","db":"sourcedb","user":"postgres","pwd":"secret"}
 # * DEST   = {"host":"destination_postgres","db":"destdb","user":"postgres","pwd":"secret"}
 # * wait_for_postgres(SOURCE["host"]); wait_for_postgres(DEST["host"])
 # * print("Starting ELT...")
 # *
-# * # Extract: dump source DB to file
+# ^ Extract: dump source DB to file
 # * dump_cmd = ["pg_dump","-h",SOURCE["host"],"-U",SOURCE["user"],"-d",SOURCE["db"],"-f","/app/data_dump.sql","-w"]
 # * subprocess.run(dump_cmd, env={"PGPASSWORD":SOURCE["pwd"]}, check=True)
 # *
-# * # Load: apply dump file to destination DB
+# ^ # Load: apply dump file to destination DB
 # * load_cmd = ["psql","-h",DEST["host"],"-U",DEST["user"],"-d",DEST["db"],"-f","/app/data_dump.sql","-w"]
 # * subprocess.run(load_cmd, env={"PGPASSWORD":DEST["pwd"]}, check=True)
 # * print("ELT complete.")
@@ -165,11 +282,16 @@
 # * Destination DB starts empty.
 # * ELT container waits for readiness → pg_dump → psql → “ELT complete.”
 
-# ? Verify in destination DB
-# * docker exec -it destination_postgres psql -U postgres -d destdb
-# * \dt                               # list tables
-# * SELECT COUNT(*) FROM films;       # should match source
-# * SELECT * FROM actors;             # confirm data arrived
+
+# & Verifying Results
+
+# ? Connect to destination DB:
+# * docker exec -it <destination_container_name> psql -U postgres -d destdb
+# ^ ex in our case:
+# ~ docker exec -it 05buildingdatapipeline-destination_postgres-1 psql -U postgres
+# * \c destination_db : to check the connection to destination database
+# * \dt             # list tables
+# * SELECT * FROM actors;   # confirm data copied
 
 # & Troubleshooting (common issues seen in the tutorial)
 
@@ -210,7 +332,7 @@
 # * Compose starts 3 containers: source DB, destination DB, ELT worker.
 # * Source seeds itself from init.sql (auto-run).
 # * ELT worker waits → pg_dump (export source) → psql (import to dest).
-# * You connect from your host to source (5433) and dest (5434) to check results.
+# * You connect from your host (5432) to source (5433) and dest (5434) to check results.
 
 # & Safety and reproducibility tips
 

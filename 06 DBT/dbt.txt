@@ -1,0 +1,857 @@
+#? dbt:
+
+so actually i lied  the next evolution is
+not going to be the KRON job next it's
+actually going to be DBT DBT is going to
+be an open source tool that we can
+utilize here in order to write custom
+Transformations or custom models on top
+of the data that we've just sent into
+the destination database so you can take
+for example that we had a use case where
+this destination database is primarily
+going to be used by data analysts or
+some sort of data scientists and they
+need their data formatted or structured
+in a certain way where we're combining
+certain tables together they can't write
+SQL or something like that and they
+actually just need it a certain way or
+something along those lines we can use
+DBT to have those custom models so that
+by the time the data is inside the
+destination we can run DBT on top of
+that data and then write custom models
+here creating custom tables and things
+like that and it allows us to have
+certain capabilities it also allows us
+to even write python to run SQL scripts
+and things like that so let's go ahead
+and see what that looks like and
+implement it now there are a couple
+prerequisites you need in order to run
+DBT successfully on your machine or even
+using Docker so let's go ahead and take
+a look at what that looks like and
+actually get it installed all right so
+I'm here on the DPT docs which we will
+also list down in the description just
+so you can get to it pretty easily now
+there is some things you need to do
+locally uh not everything you can do
+here through docker so the first thing
+you need to do is obviously I'm on a Mac
+so most of the instructions here are
+going to be from Mac but you do need to
+have this installed locally and the way
+to do that is if you probably have Pip
+if you have python installed and so
+you're going to follow all these
+instructions I think you could pretty
+much skip these ones right here uh
+you're going to want to follow this one
+for sure I think actually you can
+probably skip that one too the main one
+here is installing the actual adap
+you're not just installing the adapter
+but you're also installing DBT core
+which is the open source version of DBT
+now I've already done this but if you
+run DBT install DBT hyphen postest we're
+installing the adapter of postgress that
+utilizes DBT as well as DBT core you're
+going to go ahead and run that locally
+I've already done that uh as you could
+see here so if I say uh DBT hyen hyen
+version you can see that it's going to
+list pretty much I have 1.62 installed
+I'm not going to update for the sake of
+this tutorial but there's 1.66 and I
+have the postest version installed as
+well so make sure you through this
+installation really quickly and that way
+we can actually go through and create
+our models so make sure you do that that
+is just the only prerequisite for this
+section okay so now that we have DBT
+installed let me go ahead and show you
+how we can initialize a project here so
+it's as simple as DBT innit we're going
+to run DBT in nit inside of the root
+directory excuse me uh now it's going to
+ask us for the name of our project we're
+going to say uh custom I don't know
+custom postgress so it's going to say
+custom _ postgress and you can see it's
+creating these folders here for us now
+we have the database we would like to
+use it's asking us right here for
+postgress and obviously it's the only
+adapter that we installed so we're going
+to hit number one and therefore it's
+created us our it's created two folders
+actually if we take a look on the right
+left hand side it's created logs for us
+so we now have logs for anything
+regarding DBT as well as our project for
+DBT so it has a couple folders here
+analysis macros models seeds snap shots
+and tests primarily what we're going to
+be focusing on is the models and macros
+for now uh and then the the rest of it
+is is kind of like you know you can
+learn as you go but for the sake of this
+tutorial we're going to be focusing on
+these folders here so there are other
+couple things that we need to do in
+order to set up the project itself
+before we actually write our models the
+one thing we actually have to do is
+going to be this so I've just copied and
+pasted this one command but you're going
+to do Nano and inside of the complete
+root of your local machine when you
+install DBT using pip it actually
+creates this DBT directory and inside
+that folder is a profiles. yl file so
+what we're going to do is go in there
+and you can see that I've already set
+this up but inside of the dev profile it
+does say post Crestor Transformations
+I'm going to go ahead and change this
+because this is now different so what
+I've done now is I'm going to do change
+the name of this because it's no longer
+post Transformations that's what I
+normally did uh this is going to be
+custom postgress you can see it's done
+that down here it it is actually done
+that down here here actually you know
+what I'm probably just going to do that
+instead I'm going to
+post so now that we're inside of this
+folder you can see that I've already
+done this prior but if we were to go
+down here into the custom post crust
+profile which is created for me because
+of this new project you can see here
+there there's two different outputs
+there's prod and Dev we're going to be
+primarily focusing on dev and we do need
+to fill out the actual information here
+so inside of host I'm actually to do
+host. doer. internal which is needed in
+order for DBT to actually recognize the
+docker containers that we were trying to
+access here which is going to be our
+destination database so make sure that
+this says host. doer. internal and it'll
+read the actual Network or IP address of
+your Docker container for the
+destination database for the port here
+this is going to be 5434 I'm pretty sure
+for the destination for the user we're
+going to change this over to postest for
+the password
+we're going to change this over to
+secret DB name will be
+destination DB and then I forget what I
+actually put for the schema here uh
+schema should be public and then I
+forgot to fill up the threads here so
+let's change this to one all right so
+and the target here is going to be Dev
+so obviously make sure that says it by
+default it should just Target the dev
+profile but now that we have our
+information filled out here it should
+have the correct information to connect
+to our destination database I believe if
+I do write out maybe not write out but
+if we say x save modified we're going to
+hit yes tab to complete and hit enter
+okay so this should have saved it now
+the other thing to do here is inside of
+the DBT project. file the one thing to
+note is that obviously the profile we
+just wrote is the custom _ postgress you
+don't have to change anything here
+except for this bottom section inside of
+the bottom section is going to be how
+we're forming our models now inside of
+the models folder you can see that
+there's an example folder and then a
+couple of models here what we're
+actually going to do is we're going to
+change this there's a couple options
+inside the material section but because
+we're using postest tables we actually
+want to change this to table if you keep
+it as view we're actually not going to
+see any of the tables that we created
+come through or anything like that or
+DBT is not going to be able to recognize
+it so we have to change it to a table
+now that we've done that we can actually
+go in and write our models so let's go
+ahead and do that all right so we are
+inside of the models folder here and
+inside of this example folder are some
+custom examples that they have created
+for us uh we don't really need to see
+this because we're going to be writing
+our own so I'm actually going to go
+ahead and delete both of these we're
+going to keep the schema. yaml for now
+well we're going to reference that later
+but let's create our models here so you
+can think of models as just SQL files
+we're just querying the data but we're
+morphing the data around to the needs
+that we need so we just do it once here
+and then once the destination database
+has its data everything that we've
+queried here all the modifications and
+the new tables that we've created will
+end up inside of the destination
+database and you'll see what I mean by
+all that once we have it all hooked up
+the first thing we need to do is
+actually Source the data itself because
+it can't just simply reference tables
+inside of a destination database without
+having the actual reference itself so
+what we're going to do is we're going to
+create our first one so we're going to
+say film _ actors which is a table that
+we're actually writing over into the
+destination database and this is simply
+just creating a reference for us to
+create the custom models so this isn't
+necessarily a custom model here um so
+we're going to write some some SQL here
+select all from and then we're going to
+do double curly brackets here and inside
+of that we're going to say the source of
+our data is going to come from
+destination database and the name it for
+this that we're going to reference it
+from is going to be Filmore actors we're
+going to need to wrap both of these in
+single quotes very cool now what we've
+done is we've sourced the destination
+database and we've taken the film actors
+table and now we have a film actors's
+reference let me go ahead and copy and
+paste this we're going to do that again
+for the actors table so actors. SQL
+we're going to paste this in here and
+we're simply going to change this over
+to actors and we're going to do the same
+for films films. SQL so we have our
+references now we can actually create
+our custom models but again before we do
+that we have to have some prerequisite
+work so for the schemas these are our
+custom models here our our DBT models
+and we do have to specify what the
+schema of these are going to be so that
+if we do need to test anything which you
+should be testing you can run a model or
+you can run DBT against all of these SQL
+files and if it doesn't match what we've
+specified inside the schema we're going
+to get thrown back errors so you should
+definitely always do this what I'm going
+to do is I'm going to head over into our
+file here and I'm going to look into the
+models and example fold and we're going
+to have a couple things so schema. AML
+is what we want we see that there's a
+films table here and every bit of schema
+here for that one the actors film actors
+film ratings I think I need the film
+ratings one two as a yeah that's fine so
+what we're going to actually just do
+here is copy and paste this whole thing
+I implore you to do that too we're going
+to paste that in there and now we have
+the schema for all the tables that we
+just add now the other thing too that we
+need to do is we're going to go ahead
+and copy over the sources EML so now
+we're specifying the raw data from the
+destination database so I'm going to
+copy this as well and you can see film
+actor and film actors literally the
+exact tables that we just copied so
+we're going to go in here and create a
+new file called sources. EML and paste
+everything that we just saw so now we
+actually have sources that we can point
+to regarding these files or tables
+essentially that we're querying from so
+you can see if we think about this from
+the top down data is theoretic Ally
+already written inside of the
+destination database DBT is going to run
+after we've moved data over so the data
+is already there and from there what
+we're doing is taking in the data so
+that way we can modify it and create a
+custom model with that data so all we're
+doing here is referencing data that we
+already have now let's go in and create
+the custom models to formulate and
+modify the data we have into a table
+that we want okay so the first model we
+going to create inside of the example
+folder I'm going to name Filmore
+ratings. SQL so what we're going to be
+doing is appending the films as well as
+the actors together to create one table
+but it's going to be primarily focused
+on the film ratings so let's get to it
+all right so what we're going to do
+inside of this file is we're actually
+going to create two different tables and
+then use a join to create one if that
+makes sense so the first one we're going
+to call is with filmscore with ratings
+as and then this is where we're going to
+run our sequel to create this table so
+we're going to say select
+filmcore ID
+title release _ date make sure you're
+adding commas price rating these are all
+from the table that we already have this
+is going to be user rating this is where
+we add something very specific so this
+is going to be a case so what the case
+is kind of like you can think of an if
+state statement per se so we're going to
+say when user rating is greater than or
+equals to uh let's say
+4.5 then we want the rating to say
+excellent uh we're going to add another
+one where user rating is going to be
+greater than or equals to 4.0 so kind of
+like in the in between there and we're
+going to say that we want the rating to
+read good and then the last one we're
+going to do is going to the user rating
+is going to be greater than or equals to
+3.0 then we're we're going to say that
+this is going to be average else we're
+going to label it as poor and we're
+going to end as rating uncore
+category so that ends this case
+statement here and this is where the
+reference comes in so we're going to say
+from and we're going to open the double
+curly brackets again and if we say ref
+parentheses films we're going to be
+pulling from this here because we
+labeled it as films so now we can
+actually reference it here within
+this little query here one thing I
+forgot to mention for this specifically
+is you saw that we say with and as or
+with films with ratings this is actually
+what's referred to as a CTE or comment
+table expression so you can see this as
+a wrapper of this query kind of like a
+subquery per se but it makes it easy to
+write queries that are maintainable and
+they're also scoped just to this CTE so
+it will not like go outside of this so
+this allows us to write subqueries and
+then ultimately reference them later
+inside of this file so it is actually
+really really nice part of DBT that lets
+us write CTE uh to kind of formulate
+these custom models so that's just
+something I forgot to mention when we
+were first writing this but remember
+this is a CTE or Common Table expression
+all right so now that we have our first
+CTE so let's write the second one I
+added a comma after the CTE so that way
+we can string on another one this one is
+going to be films with underscore with
+uncore actors as and then that's going
+to open our CTE here our second one so
+we're going to say select and we're
+going to do the Alias here um f.
+Filmore ID f. tile and then we're going
+to do a string aggregator or string
+aggregation with a.
+actor undor name we're going to pend it
+with a comma there and we're going to do
+as actors so we're aggregating actor
+names for each film here and and then
+we're also going to hit the reference so
+from double curly brackets reference
+films and then obviously we're going to
+enable the Alias here with f my auto
+completes that but there we go so then
+we're also going to left join Filmore
+actors table and we're going to give
+that fa for film actors on f. Filmore ID
+if it equals the film actors. film idect
+uh we're going to do another left join
+here referencing the this left join we
+need to this so let's go ahead and do
+that so forgot the curly brackets or I'm
+sorry the uh parenthesis and single
+quotes there um let's add the actors for
+this reference obviously this one is
+going to be a on fa. actor _ ID if it
+equals the a. actor ID and then we're
+going to group by the f. Filmore ID and
+the f. tile okay so that's going to be
+the second CTE so we have two now
+technically two series films with
+ratings and the films with actors so
+we've taken the film ID and the title
+and we've joined the two tables that we
+had here we have the film actors and the
+actors table so these are obviously you
+know we worked with these before but the
+film actors and the actors is the bridge
+to the films table so now we can
+actually join them to create one so now
+we're going to have the main query here
+we're going to select fwf do asterisk
+here and we're going to say fwa film
+with actors. actors the filmscore with
+now you can see underscore ratings you
+can see how we're referencing the actual
+CTE now and then we're going to label
+this as fwf for the Alias then we're
+going to say left join films with actors
+which we're going to label fwa on
+fwf do Filmore ID if it equals the film
+with actors do
+Filmore now we're creating essentially
+what could be two tables two tables
+using the references we've created and
+now we're actually joining them together
+using this custom model now if we were
+to want to run this we now need to set
+up the dock container for DBT so let's
+go ahead and do that and then run this
+custom model just to see what it would
+look like okay so we are back inside of
+our Docker compos file let's go ahead
+and add the DBT service so underneath
+the elt script I'm going to say DBT
+which is going to be the name of our
+service the image I want to use is going
+to be
+gc. i/ DBT laabs SL DBT postgress and
+then the version is
+1.47 uh this as of right now at the time
+of this recording is most likely out of
+date but it's just what I use so I'm
+going to go ahead and run with it the
+command I'm going to run here uh I'm
+actually going to run a couple now I'm
+going to open this square brackets and
+the first one I'm going to do is run so
+this is technically DBT run DBT run is
+the command you would use
+in order to run your models on top of
+the destination so I'm going to string a
+couple here so we're going to say run
+and then we're actually going to do
+we're going to point to the profiles
+directory so if I do double hyphen
+profiles hypher not period I need a
+comma we're going to say that is going
+to be in the uh root here and then if
+we're going to point to the project
+directory then we're going to point to/
+DB T which is the name essentially going
+to be the name of our project directory
+here the one thing I also want to do uh
+well we can leave this out for now
+actually um so after that we're going to
+do networks and this will be altore
+Network so we can keep it on the same
+network here and now we're going to
+point some volumes here so with the
+volumes we have the actual project
+itself so you notice I said SL DBT so
+here we're actually going to create
+another mapping to point to DBT because
+if we remember correctly on Docker
+containers every directory here is
+pretty much going to be pointing to the
+directory inside of the actual Docker
+container and not your local machine so
+you have to map the docker container to
+look at where the actual project is
+going to be on your local machine so
+we're going to create that mapping and
+this is going to be/ custom postgress
+and then uh from there we're going to do
+the colon to create the mapping to The
+Container path and then the container
+path is simply just going to be/ DBT
+which we've pointed right here now we
+need to create another volume here uh
+let me add a space here because that
+requires a space uh we're going to point
+to the um the DBT profile that we did so
+we're going to need the squiggly Tilda
+we need squiggly SL DBT and we're going
+to point this over into the root which
+is where we pointed if I could spell
+normally uh this is where the profiles
+directory was which is going to be in/
+root so now we're mapping our local DBT
+folder with the profiles. emo file to
+the/ root of the docker container
+hopefully that makes a bunch of sense
+cuz in my mind it kind of does so we're
+also going to say depends on the elt
+undersource scripts we want DBT only to
+run because remember when this container
+starts we're running this command and if
+we run DBT run on top of the destination
+database without it having any data this
+will not work because there nothing to
+reference and it has nothing to write
+data on so we need this to make sure
+that it depends on the elt script and
+the elt script depends on the two
+databases so this is working down the
+line we've essentially created a uh work
+line here and then for the environments
+we need two here so we need DBT profile
+this one is going to be it's going to be
+default and then we have another one
+this one doesn't need a hyphen actually
+cuz we made that mistake last time and
+then we need DBT uncore Target and this
+one is going to be Dev so this is going
+to be everything we need for the DBT
+container now all we need to do go ahead
+and clear this I don't think compos down
+Docker compos down everything uh I think
+the volumes are still up but that's
+totally fine so now we're going to do
+Docker compose up did I type that
+correctly
+hc. i/
+DBT lab
+slbt post press s oh uh 1.7 okay that's
+another one another typo there we go so
+we're going to go ahead and let that run
+here so elt script exited Code Zero so
+that's a good sign now the DBT one
+should pop up invalid not a project
+missing DBT unor pro. file okay so
+invalid project directory project
+directory here custom _ post press maybe
+we do not need this let's go ahead and
+clear this let's do Docker down SLB and
+then so maybe custom oh I'm dumb
+uh it should have been an underscore you
+can see all the typos and everything
+really does make a difference here so
+let's run that again and that should map
+to the correct project now hopefully
+there we go so it's ran successfully I
+think unable to do partial parsing
+encoun an error error sources. yo
+runtime error sources. Yeo list of
+actors film actors ra eror while parsing
+of block mapping uni code okay so there
+was an error in our sources file here
+somewhere that might have been it um 13
+and 14 Filmore actors okay let's do this
+one more time I think my cat may have
+done something with that so you can see
+there a lot of back and forth here
+scripts ran successfully okay it's
+taking a little bit longer which is
+totally fine here model fims was which
+was not F there's a lot of typas going
+on film ratings so if we go into Filmore
+ratings reference films fil
+okay here's the typo let's Docker
+compose down again so also uh if you're
+curious if I'm Docker composing down
+hyphen V I'm actually killing the
+volumes every single time just to make
+sure that everything is working even if
+we're starting straight from the
+beginning without any data persisting so
+I'm that's the only reason why I'm doing
+that um so now we Docker compose up
+again this should work unless I've made
+even more typos okay so we're doing that
+again there we go okay so now you can
+see that we've successfully run our
+models so we've created a couple models
+here the first one was the actors the
+first one was the film actors the F and
+the second or the third one was the
+films so these are all our references so
+we've successfully taken that in but now
+we've actually done the fourth one which
+is the model for the Filmore ratings so
+you can see that that's actually worked
+now now if we were to go Docker exact
+hyphen it and then I think it was elt
+Destination _ postgress hyph 1 and then
+we do
+psql hyphen U postgress so then we go
+here we do c
+destination DB we connect there and then
+slash DT so now you can see Filmore
+ratings which is the new table that
+we've written in DBT is actually written
+now if we select all from Filmore
+ratings and it with the semicolon you
+can see that if I move this over it's a
+little big but you can see that our case
+has gone in here uh it's kind of cut off
+just because of the way that my terminal
+looks you can see everything is in there
+so we have our actors we have our film
+ID we have the release date the price
+but the most important part is the
+rating that we've created here so the
+case statement worked successfully so
+anything above a 4.5 was excellent
+anything below that between 4.0 and 4.4
+was good and you had no average one so
+you can see that we've actually created
+this custom model successfully uh along
+with the actor and the actor name so you
+had Inception with Leonardo DiCaprio it
+just looks a little weird because of the
+way that um if I were to do this here so
+let's do the same one so now you can see
+it it it looks a well it still looks a
+little weird but anyways you can see
+that it works so that is creating a
+simple model in DBT now let's look at
+some other Advanced options you can do
+inside of DBT to make your queries a
+little bit more Dynamic is the best way
+to put it okay so now that we've
+actually created the models I told you
+that we're going to get into some
+advanced stuff with DBT and that's why I
+mentioned the macros folder so you can
+think of macros as sort of like a
+reusable components of DBT where you may
+have some sort of queries that you want
+to reuse and is universal through pretty
+much all your models so what if you
+could just create a macro where you
+didn't have to rewrite the same thing
+every single time well you can
+absolutely do that with macros let's
+take the Filmore ratings file for
+example say we wanted to generate this
+every single time uh now that's probably
+not going to happen but let's say we
+wanted to do it and so let's just go
+ahead and actually take the whole file
+and cut it now inside of the macros
+folder what we're going to create is
+we're going to say Filmore ratings macro
+do SQL file everything's going to be a
+SQL file here now what we're going to do
+is we're going to start the file with
+curly brackets both sides are going to
+have a parenthesis so double parentheses
+and inside that we're going to say macro
+generate uncore Filmore ratings uh and
+then we're going to parenthesis after
+now the end of the macro is also going
+to have curly brackets is also going to
+have double parentheses but inside the
+parentheses or I'm sorry inside of the
+uh percent signs you're going to say n
+macro in one word now in between that is
+where your macro is going to go so I'm
+going to go ahead and paste what we just
+took from film ratings into the macro
+now Filmore ratings has nothing but if
+we were to go inside of film ratings now
+all we have to say is two early brackets
+and we're going to call the generate
+Filmore ratings macro so you can see
+that this is the model that we're
+actually writing and the macros never
+actually gets written but if I were
+going to go back into our terminal here
+and let's close this and let's say
+dockor compos down hph V so let's kill
+the volumes here we're going to say
+Docker compose up and it's going to run
+through everything all over again so
+let's go ahead and let that go through
+through really quickly DBT is going to
+start running and then you can see we
+still have four models being written if
+we go back now over to the destination
+database uh SLC
+destination DP and then /dt the Filmore
+ratings table is still getting written
+and if I do select all from
+Filmore ratings you can see that we're
+still writing exactly what we wrote inil
+underscore ratings but we've only been
+using the macro so you can see that
+literally anything inside of the macro
+file in between this section here and
+here is going to be written exactly as
+shown so if I were to say let's I don't
+know let's create a a macro for this
+case which probably is more plausible
+than anything so if I wanted to say
+generate
+ratings macro do SQL and we wanted to do
+the same thing where we go uh let's just
+percent sign this generates ratings and
+then we're going to end macro right and
+then we paste this inside all we have to
+do now is then just say generate ratings
+call that and then we should be able to
+do the same thing uh if we do this
+Docker compos down be compose up let
+that run again yes it takes a little bit
+of time to run it every single time but
+you know this is just what what it comes
+with it be much harder is undefined
+under undefined generate uncore ratings
+it's not generate uncore ratings uh it's
+generate underscore rating wondering if
+you can't call CT EAS here so now you
+can see kind of how macros could work is
+it it allows you to have reusable
+queries throughout your whole DBT
+project essentially to just plug and
+play in and not have to rewrite the same
+thing every single time so if you have
+reusable queries that you can use go
+ahead head and use macros because it's
+very very efficient in terms of not
+having to you know it it implores the
+dry method of software engineering where
+you know don't repeat yourself you don't
+have to repeat yourself every single
+time if you have the same queries over
+and over and over again so utilize
+macros when you can now let's move over
+into gingas which is another feature of
+DBT okay so this next section that I
+just mentioned with gingas gingas are
+essentially what allow you to create
+conditionals or add control structures
+to your SQL queries so for example that
+we're going to use is let's say we
+wanted to select a specific title but
+using a Ginga so we didn't have to
+actually put it within our actual SQL
+query that's what it allows us to do it
+could allow you to select you know do we
+want to use the prod Target instead of
+the dev Target inside of our DBT project
+then we could do that as well and we can
+change the way that queries are done
+again adding a control structure so
+let's go ahead and inside of our example
+folder we're going to create a file
+called specific under _ movie SQL and
+inside of that is where we're going to
+start with our Ginger here so again
+starts with a curly bracket and then two
+percent signs and inside of that we're
+going to say sets so when you see sets
+is essentially what is starting our
+control structure here and we're going
+to set Filmore title to equal for this
+example we're going to say Dunkirk cuz I
+know that's going to be a movie inside
+of the demo or the um test database here
+so Dunkirk is going to be a movie that
+we're going to look for right now inside
+of that we're going to say select so
+this is the actual query itself select
+all from and we're going to reference
+the uh films table here where let's
+practice here where title equals and
+then we can say in the single quotes
+Filmore title so that is obviously the
+variable that we've set up here right
+that's going to be our Ginger here we're
+setting a control structure where we
+only want to select the title where
+dynamically the value we've set here is
+dunker and obviously this can be
+anything we want it to be but so let's
+go ahead and save that and then run our
+docker compose up here and let
+everything go when DBT runs we should
+have a fifth model that runs which is
+going to be our specific movie and so
+let's go ahead and let that run here
+there's going to be the fifth it's all
+pass very good let's run our destination
+database and SLC into it so
+destination
+db/dt and you can see specific movie is
+now a table inside of this database and
+so if I say select all from specific
+uncore movie you can see Dunkirk as well
+as all of its information including the
+film ID the release date price rating
+and user rating is going to be in there
+because we've used the ginger in there
+now it allows you to to pretty much do
+anything you want you know if we wanted
+to go into the macro here and create
+conditionals where we have an excellent
+condition a good condition or an average
+condition and we set those to be this
+number we can absolutely do that and
+allows us to do that outside of the
+query so that way we can know that up
+here we can set it to a different movie
+you know if we wanted to do Inception we
+we're only changing it Inception pretty
+sure that's how you spell it if it's not
+that's going to be very awkward but so
+let's do this Docker compose down V
+Docker compose up let's run this again
+and so when we run this we should see
+that the specific movie has then changed
+over to Inception instead of dunker
+therefore showing that the ginger works
+and it it allows for a little bit more
+readability right because you can see
+that our film title we've set it to a
+variable we're not you know manually
+searching for a a movie here and we're
+going to do select all from a specific
+movie and now you can see Inception is
+now there so again a very simple example
+of what a ginger is and kind of how it
+works but go ahead and play with it I
+implore you to kind of you know
+integrate gingas with macros to really
+really you know use the full power of
+macros and gingas together and I think
+it could really 10x your SQL queries and
+your custom models from within DBT and
+really just Excel that process of the
+whole data engineering SL data analytics
+process all together

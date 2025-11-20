@@ -40,3 +40,10 @@
 
 # ? Cleanup (free space)
 # * docker system prune -a            # remove unused containers, images, networks
+
+
+hat we're going to do is use Docker to completely run everything here so let's go ahead and take a look at what that
+1:25:17
+looks like because we've made everything and hooked everything up with Docker compos it's going to be a simple as this
+1:25:25
+all we have to do inside of our terminal obviously make sure that we're in the directory that we created I'm going to
